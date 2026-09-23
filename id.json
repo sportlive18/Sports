@@ -151,16 +151,34 @@
       "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Sony_Sports_Ten_1_HD"
     },
     {
+      "id": "sony-ten-1-hd-b",
+      "name": "Sony Sports Ten 1 HD B",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/sony/sony-sports-1-hd"
+    },
+    {
       "id": "sony-ten-2-hd",
       "name": "Sony Sports Ten 2 HD",
       "type": "iframe",
       "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Sony_Sports_Ten_2_HD"
+    },
+     {
+      "id": "sony-ten-2-hd-b",
+      "name": "Sony Sports Ten 2 HD B",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/sony/sony-sports-2-hd"
     },
     {
       "id": "sony-ten-3-hindi-hd",
       "name": "Sony Sports Ten 3 Hindi HD",
       "type": "iframe",
       "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Sony_Sports_Ten_3_Hindi_HD"
+    },
+     {
+      "id": "sony-ten-3-hd-b",
+      "name": "Sony Sports Ten 3 HD B",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/sony/sony-sports-3-hd"
     },
     {
       "id": "sony-ten-4-kannada",
@@ -185,6 +203,12 @@
       "name": "Sony Sports Ten 5 HD",
       "type": "iframe",
       "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Sony_Sports_Ten_5_HD"
+    },
+    {
+      "id": "sony-ten-5-hd-b",
+      "name": "Sony Sports Ten 5 HD B",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/sony/sony-sports-5-hd"
     }
   ]
 }
