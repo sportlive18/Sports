@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+  <title>SPORTLINK</title>
+
+  <!-- Material Icons -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+
+  <style>
+    /* ----- RESET & FULLSCREEN BLACK BACKGROUND ----- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      background: #000000;
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      min-height: 100%;
+    }
+
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+    }
+
+    /* ----- HEADER ----- */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(18px, 4vh, 32px) clamp(12px, 3vw, 28px);
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+      z-index: 20;
+      min-height: clamp(60px, 8vh, 80px);
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08), 0 4px 20px rgba(255, 255, 255, 0.02);
+    }
+
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 10%;
+      right: 10%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 59, 59, 0.5), transparent);
+      border-radius: 100%;
+    }
+
+    .logo {
+      font-size: clamp(1.4rem, 3.5vw, 2.4rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .logo .sport {
+      color: #ff3b3b;
+      text-shadow: 0 0 60px rgba(255, 59, 59, 0.25);
+    }
+    .logo .link {
+      color: #ffffff;
+      text-shadow: 0 0 30px rgba(255, 255, 255, 0.05);
+    }
+    .logo .dot {
+      color: #ff3b3b;
+      font-size: 0.35em;
+      margin-left: 0.05em;
+      opacity: 0.6;
+    }
+
+    /* ----- MAIN CONTENT ----- */
+    .main {
+      margin-top: clamp(60px, 8vh, 80px);
+      min-height: calc(100vh - clamp(60px, 8vh, 80px));
+      min-height: calc(100dvh - clamp(60px, 8vh, 80px));
+      display: flex;
+      flex-direction: column;
+      background: #000000;
+      width: 100%;
+    }
+
+    /* ----- 16:9 PLAYER ----- */
+    .player-wrapper {
+      width: 100%;
+      background: #000000;
+      flex-shrink: 0;
+      position: relative;
+      padding-bottom: 56.25%;
+      height: 0;
+      max-height: 70vh;
+    }
+
+    @media (min-width: 900px) {
+      .player-wrapper {
+        padding-bottom: 0;
+        height: min(56.25vw, 70vh);
+        max-height: 70vh;
+      }
+    }
+
+    .player-wrapper iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #000000;
+    }
+
+    .watermark {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      z-index: 5;
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+      font-size: clamp(0.7rem, 1.4vw, 1rem);
+      color: rgba(255, 255, 255, 0.55);
+      letter-spacing: 0.05em;
+      pointer-events: none;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+      user-select: none;
+    }
+    .watermark .accent { color: #ff3b3b; }
+
+    /* ----- TABS ----- */
+    .tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.08);
+      background: rgba(0, 0, 0, 0.6);
+      flex-shrink: 0;
+      padding: 0;
+      width: 100%;
+      min-height: clamp(60px, 8vh, 90px);
+      position: sticky;
+      top: clamp(60px, 8vh, 80px);
+      z-index: 15;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      padding: clamp(16px, 2.5vh, 28px) clamp(28px, 5vw, 56px);
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.1rem, 1.8vw, 1.6rem);
+      color: #ffffff;
+      cursor: default;
+      border-bottom: 4px solid #ff3b3b;
+      background: rgba(255, 59, 59, 0.06);
+      letter-spacing: 0.03em;
+      flex: 1;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      position: relative;
+      min-height: clamp(60px, 8vh, 90px);
+    }
+
+    .tab-btn .material-icons {
+      font-size: clamp(1.6rem, 2.2vw, 2.4rem);
+      color: #ff3b3b;
+    }
+
+    /* ----- SINGLE SERVER LAYOUT ----- */
+    .servers-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(8px, 1.5vw, 20px);
+      padding: clamp(12px, 2vh, 24px) clamp(12px, 2vw, 32px);
+      width: 100%;
+    }
+
+    .server-column {
+      background: #0a0505;
+      border: 1px solid rgba(255, 59, 59, 0.15);
+      border-radius: 16px;
+      padding: clamp(10px, 1.5vw, 18px);
+      width: 100%;
+      max-width: 900px;
+      min-width: 0;
+    }
+
+    .server-title {
+      text-align: center;
+      font-weight: 700;
+      font-size: clamp(0.85rem, 1.3vw, 1.2rem);
+      color: #ff3b3b;
+      letter-spacing: 0.04em;
+      margin-bottom: clamp(8px, 1.2vh, 14px);
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(255, 59, 59, 0.2);
+      text-transform: uppercase;
+    }
+
+    .server-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: clamp(6px, 1vh, 10px);
+    }
+
+    /* ----- CHANNEL CARDS ----- */
+    .channel-card {
+      background: #1a0e0e;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: clamp(8px, 1.2vh, 12px) clamp(10px, 1.2vw, 14px);
+      transition: all 0.25s ease;
+      cursor: pointer;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      text-align: left;
+      gap: clamp(8px, 1vw, 12px);
+      width: 100%;
+      min-width: 0;
+    }
+
+    .channel-card:hover {
+      border-color: rgba(255, 59, 59, 0.4);
+      transform: translateY(-2px);
+      background: #241212;
+    }
+
+    .channel-card .icon {
+      width: clamp(32px, 4vw, 44px);
+      height: clamp(32px, 4vw, 44px);
+      border-radius: 50%;
+      background: #0f0505;
+      border: 2px solid rgba(255, 59, 59, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: clamp(8px, 0.95vw, 11px);
+      color: #ff3b3b;
+      transition: all 0.25s ease;
+      flex-shrink: 0;
+      line-height: 1;
+      text-align: center;
+    }
+
+    .channel-card:hover .icon {
+      border-color: #ff3b3b;
+      box-shadow: 0 0 20px rgba(255, 59, 59, 0.15);
+    }
+
+    .channel-card .name {
+      font-weight: 600;
+      font-size: clamp(0.7rem, 0.9vw, 0.95rem);
+      color: #f0f2f5;
+      letter-spacing: 0.01em;
+      line-height: 1.3;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+    }
+
+    .channel-card.active {
+      border-color: #ff3b3b;
+      box-shadow: 0 0 30px rgba(255, 59, 59, 0.1);
+      background: #1f0d0d;
+    }
+
+    .channel-card.active .icon {
+      border-color: #ff3b3b;
+      box-shadow: 0 0 20px rgba(255, 59, 59, 0.25);
+      background: rgba(255, 59, 59, 0.1);
+    }
+
+    /* ----- RESPONSIVE ----- */
+    @media (max-width: 600px) {
+      .header {
+        padding: 10px 12px;
+        min-height: 48px;
+      }
+      .header::after {
+        left: 5%;
+        right: 5%;
+      }
+      .logo {
+        font-size: clamp(1rem, 4.5vw, 1.4rem);
+        gap: 1px;
+      }
+      .main {
+        margin-top: 48px;
+        min-height: calc(100vh - 48px);
+        min-height: calc(100dvh - 48px);
+      }
+      .tabs {
+        min-height: 50px;
+        top: 48px;
+      }
+      .tab-btn {
+        padding: 10px 12px;
+        font-size: 0.75rem;
+        gap: 6px;
+        min-height: 50px;
+      }
+      .tab-btn .material-icons {
+        font-size: 1rem;
+      }
+      .servers-wrapper {
+        gap: 6px;
+        padding: 8px;
+      }
+      .server-column {
+        padding: 6px;
+        border-radius: 10px;
+      }
+      .server-title {
+        font-size: 0.7rem;
+        margin-bottom: 6px;
+      }
+      .server-grid {
+        gap: 4px;
+      }
+      .channel-card {
+        padding: 6px 8px;
+        gap: 6px;
+        border-radius: 8px;
+      }
+      .channel-card .icon {
+        width: 28px;
+        height: 28px;
+        font-size: 7px;
+      }
+      .channel-card .name {
+        font-size: 0.65rem;
+      }
+    }
+
+    @media (orientation: landscape) and (max-height: 500px) {
+      .header {
+        padding: 6px 16px;
+        min-height: 40px;
+      }
+      .logo {
+        font-size: clamp(0.8rem, 2.5vh, 1.2rem);
+      }
+      .main {
+        margin-top: 40px;
+        min-height: calc(100vh - 40px);
+        min-height: calc(100dvh - 40px);
+      }
+      .tabs {
+        min-height: 42px;
+        top: 40px;
+      }
+      .tab-btn {
+        padding: 6px 16px;
+        font-size: 0.7rem;
+        gap: 4px;
+        min-height: 42px;
+      }
+      .tab-btn .material-icons {
+        font-size: 0.9rem;
+      }
+      .player-wrapper {
+        padding-bottom: 50%;
+      }
+      .servers-wrapper {
+        gap: 6px;
+        padding: 8px 10px;
+      }
+      .server-column {
+        padding: 6px;
+        border-radius: 8px;
+      }
+      .server-title {
+        font-size: 0.65rem;
+        margin-bottom: 4px;
+      }
+      .channel-card {
+        padding: 4px 6px;
+        gap: 4px;
+      }
+      .channel-card .icon {
+        width: 24px;
+        height: 24px;
+        font-size: 6px;
+      }
+      .channel-card .name {
+        font-size: 0.55rem;
+      }
+    }
+
+    @media (min-width: 1200px) {
+      .header {
+        padding: 28px 40px;
+        min-height: 90px;
+      }
+      .header::after {
+        left: 15%;
+        right: 15%;
+      }
+      .logo {
+        font-size: 2.8rem;
+      }
+      .main {
+        margin-top: 90px;
+        min-height: calc(100vh - 90px);
+        min-height: calc(100dvh - 90px);
+      }
+      .tabs {
+        min-height: 100px;
+        top: 90px;
+      }
+      .tab-btn {
+        padding: 28px 56px;
+        font-size: 1.6rem;
+        gap: 18px;
+        min-height: 100px;
+      }
+      .tab-btn .material-icons {
+        font-size: 2.4rem;
+      }
+      .servers-wrapper {
+        gap: 28px;
+        padding: 32px 48px;
+      }
+      .server-column {
+        padding: 24px;
+        border-radius: 20px;
+      }
+      .server-title {
+        font-size: 1.4rem;
+        margin-bottom: 18px;
+      }
+      .server-grid {
+        gap: 12px;
+      }
+      .channel-card {
+        padding: 14px 18px;
+        gap: 14px;
+        border-radius: 16px;
+      }
+      .channel-card .icon {
+        width: 52px;
+        height: 52px;
+        font-size: 12px;
+      }
+      .channel-card .name {
+        font-size: 1.05rem;
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo">
+      <span class="sport">Sport</span><span class="link">Link</span><span class="dot">•</span>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+
+    <!-- PLAYER -->
+    <div class="player-wrapper">
+      <iframe id="playerFrame" src="https://sportlink-jtv.pages.dev/Channel/Sony_Sports_Ten_1_HD" allowfullscreen loading="lazy" title="Live Match" allow="encrypted-media; fullscreen; autoplay"></iframe>
+      <div class="watermark">Sport<span class="accent">Link</span></div>
+    </div>
+
+    <!-- TAB BAR -->
+    <div class="tabs">
+      <button class="tab-btn" data-tab="channels">
+        <span class="material-icons">live_tv</span>
+        <span>Channels</span>
+      </button>
+    </div>
+
+    <!-- SINGLE SERVER -->
+    <div class="servers-wrapper">
+      <div class="server-column">
+        <div class="server-title">ALL DEVICES</div>
+        <div class="server-grid" id="serverGrid"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    (function() {
+      // ----- SINGLE SERVER — all channels (Star Sports + Sony Sports) -----
+      const channels = [
+        { name: "Star Sports 1",              src: "https://sportlink-jtv.pages.dev/Channel/Star_Sports_1",              logo: "SS1"  },
+        { name: "Star Sports 1 HD",           src: "https://sportlink-jtv.pages.dev/Channel/Star_Sports_1_HD",           logo: "SS1+" },
+        { name: "Star Sports 1 Hindi",        src: "https://sportlink-jtv.pages.dev/Channel/Star_Sports_1_Hindi",        logo: "1 HN" },
+        { name: "Star Sports 1 Hindi HD",     src: "https://sportlink-jtv.pages.dev/Channel/Star_Sports_1_Hindi_HD",     logo: "1HN+" },
+        { name: "Star Sports 1 Kannada",      src: "https://sportlink-jtv.pages.dev/Channel/Star_Sports_1_Kannada",      logo: "1 KN" },
+        { name: "Star Sports 1 Tamil",        src: "https://sportlink-jtv.pages.dev/Channel/Star_Sports_1_Tamil",        logo: "1 TM" },
+        { name: "Star Sports 1 Tamil HD",     src: "https://sportlink-jtv.pages.dev/Channel/Star_Sports_1_Tamil_HD",     logo: "1TM+" },
+        { name: "Star Sports 1 Telugu",       src: "https://sportlink-jtv.pages.dev/Channel/Star_Sports_1_Telugu",       logo: "1 TL" },
+        { name: "Star Sports 1 Telugu HD",    src: "https://sportlink-jtv.pages.dev/Channel/Star_Sports_1_Telugu_HD",    logo: "1TL+" },
+        { name: "Star Sports 2",              src: "https://sportlink-jtv.pages.dev/Channel/Star_Sports_2",              logo: "SS2"  },
+        { name: "Star Sports 2 HD",           src: "https://sportlink-jtv.pages.dev/Channel/Star_Sports_2_HD",           logo: "SS2+" },
+        { name: "Star Sports 2 Hindi",        src: "https://sportlink-jtv.pages.dev/Channel/Star_Sports_2_Hindi",        logo: "2 HN" },
+        { name: "Star Sports 2 Hindi HD",     src: "https://sportlink-jtv.pages.dev/Channel/Star_Sports_2_Hindi_HD",     logo: "2HN+" },
+        { name: "Star Sports 2 Kannada",      src: "https://sportlink-jtv.pages.dev/Channel/Star_Sports_2_Kannada",      logo: "2 KN" },
+        { name: "Star Sports 2 Tamil",        src: "https://sportlink-jtv.pages.dev/Channel/Star_Sports_2_Tamil",        logo: "2 TM" },
+        { name: "Star Sports 2 Tamil HD",     src: "https://sportlink-jtv.pages.dev/Channel/Star_Sports_2_Tamil_HD",     logo: "2TM+" },
+        { name: "Star Sports 2 Telugu",       src: "https://sportlink-jtv.pages.dev/Channel/Star_Sports_2_Telugu",       logo: "2 TL" },
+        { name: "Star Sports 2 Telugu HD",    src: "https://sportlink-jtv.pages.dev/Channel/Star_Sports_2_Telugu_HD",    logo: "2TL+" },
+        { name: "Star Sports 3",              src: "https://sportlink-jtv.pages.dev/Channel/Star_Sports_3",              logo: "SS3"  },
+        { name: "Star Sports Khel",           src: "https://sportlink-jtv.pages.dev/Channel/Star_Sports_Khel",           logo: "KHEL" },
+        { name: "Star Sports Select 1",       src: "https://sportlink-jtv.pages.dev/Channel/Star_Sports_Select_1",       logo: "SL1"  },
+        { name: "Star Sports Select 1 HD",    src: "https://sportlink-jtv.pages.dev/Channel/Star_Sports_Select_1_HD",    logo: "SL1+" },
+        { name: "Star Sports Select 2",       src: "https://sportlink-jtv.pages.dev/Channel/Star_Sports_Select_2",       logo: "SL2"  },
+        { name: "Star Sports Select 2 HD",    src: "https://sportlink-jtv.pages.dev/Channel/Star_Sports_Select_2_HD",    logo: "SL2+" },
+        { name: "Sony Sports Ten 1 HD",       src: "https://sportlink-jtv.pages.dev/Channel/Sony_Sports_Ten_1_HD",       logo: "SN1"  },
+        { name: "Sony Sports Ten 2 HD",       src: "https://sportlink-jtv.pages.dev/Channel/Sony_Sports_Ten_2_HD",       logo: "SN2"  },
+        { name: "Sony Sports Ten 3 Hindi HD", src: "https://sportlink-jtv.pages.dev/Channel/Sony_Sports_Ten_3_Hindi_HD", logo: "SN3"  },
+        { name: "Sony Sports Ten 4 Kannada",  src: "https://sportlink-jtv.pages.dev/Channel/Sony_Sports_Ten_4_Kannada",  logo: "4 KN" },
+        { name: "Sony Sports Ten 4 Tamil",    src: "https://sportlink-jtv.pages.dev/Channel/Sony_Sports_Ten_4_Tamil",    logo: "4 TM" },
+        { name: "Sony Sports Ten 4 Telugu",   src: "https://sportlink-jtv.pages.dev/Channel/Sony_Sports_Ten_4_Telugu",   logo: "4 TL" },
+        { name: "Sony Sports Ten 5 HD",       src: "https://sportlink-jtv.pages.dev/Channel/Sony_Sports_Ten_5_HD",       logo: "SN5"  }
+      ];
+
+      const serverGrid = document.getElementById('serverGrid');
+      const playerIframe = document.getElementById('playerFrame');
+
+      function renderServer(activeIndex) {
+        serverGrid.innerHTML = channels.map((ch, i) => `
+          <div class="channel-card ${i === activeIndex ? 'active' : ''}" data-index="${i}">
+            <div class="icon">${ch.logo}</div>
+            <div class="name">${ch.name}</div>
+          </div>
+        `).join('');
+
+        serverGrid.querySelectorAll('.channel-card').forEach(card => {
+          card.addEventListener('click', function() {
+            const idx = parseInt(this.dataset.index);
+            switchChannel(idx);
+          });
+        });
+      }
+
+      function switchChannel(index) {
+        const ch = channels[index];
+        if (!ch) return;
+        playerIframe.src = ch.src;
+
+        document.querySelectorAll('.channel-card').forEach(c => {
+          c.classList.toggle('active', parseInt(c.dataset.index) === index);
+        });
+      }
+
+      // Initial state: keep "Sony Sports Ten 1 HD" selected
+      let initialIndex = channels.findIndex(c => c.name === "Sony Sports Ten 1 HD");
+      if (initialIndex < 0) initialIndex = 0;
+
+      renderServer(initialIndex);
+      switchChannel(initialIndex);
+    })();
+  </script>
+
+   <script src="https://pl31358401.profitableratecpmnetwork.com/a3/81/41/a38141b4ff99f6ef8dbf9dc5f76bd86b.js"></script>
+
+</body>
+</html>
