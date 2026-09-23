@@ -209,6 +209,230 @@
       "name": "Sony Sports Ten 5 HD B",
       "type": "iframe",
       "iframeSrc": "https://sportlink-jtv.pages.dev/sony/sony-sports-5-hd"
-    }
+    },
+    [
+  {
+    "id": "fubosports1",
+    "name": "Fubo Sports 1",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/fubo-sports-1"
+  },
+  {
+    "id": "fubosports2",
+    "name": "Fubo Sports 2",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/fubo-sports-2"
+  },
+  {
+    "id": "beinsports1",
+    "name": "beIN Sports 1",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/bein-sports-1"
+  },
+  {
+    "id": "beinsports2",
+    "name": "beIN Sports 2",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/bein-sports-2"
+  },
+  {
+    "id": "beinsports3",
+    "name": "beIN Sports 3",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/bein-sports-3"
+  },
+  {
+    "id": "premiersports1",
+    "name": "PREMIER SPORTS 1",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/premier-sports-1"
+  },
+  {
+    "id": "premiersports2",
+    "name": "PREMIER SPORTS 2",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/premier-sports-2"
+  },
+  {
+    "id": "tntsports1",
+    "name": "TNT SPORTS 1",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/tnt-sports-1"
+  },
+  {
+    "id": "tntsports2",
+    "name": "TNT SPORTS 2",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/tnt-sports-2"
+  },
+  {
+    "id": "tntsports3",
+    "name": "TNT SPORTS 3",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/tnt-sports-3"
+  },
+  {
+    "id": "tntsports4",
+    "name": "TNT SPORTS 4",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/tnt-sports-4"
+  },
+  {
+    "id": "cbssport",
+    "name": "CBS SPORTS",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/cbs-sports"
+  },
+  {
+    "id": "dsports",
+    "name": "D SPORTS",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/d-sports"
+  },
+  {
+    "id": "willowsports",
+    "name": "WILLOW SPORTS",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/willow-sports"
+  },
+  {
+    "id": "fancode1",
+    "name": "FANCODE 1",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/fancode-1"
+  },
+  {
+    "id": "fancode2",
+    "name": "FANCODE 2",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/fancode-2"
+  },
+  {
+    "id": "tsn1",
+    "name": "TSN 1",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/tsn-1"
+  },
+  {
+    "id": "tsn2",
+    "name": "TSN 2",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/tsn-2"
+  },
+  {
+    "id": "tsn3",
+    "name": "TSN 3",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/tsn-3"
+  },
+  {
+    "id": "tsn4",
+    "name": "TSN 4",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/tsn-4"
+  },
+  {
+    "id": "tsn5",
+    "name": "TSN 5",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/tsn-5"
+  },
+  {
+    "id": "ddsportshd",
+    "name": "DD Sports HD",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/dd-sports-hd"
+  },
+  {
+    "id": "willowsports2",
+    "name": "Willow Sports",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/willow-sports-2"
+  },
+  {
+    "id": "foxsports1hd",
+    "name": "FOX SPORTS 1 HD",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/fox-sports-1-hd"
+  },
+  {
+    "id": "foxsports2hd",
+    "name": "FOX SPORTS 2 HD",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/fox-sports-2-hd"
+  },
+  {
+    "id": "foxsports4k",
+    "name": "FOX Sports 4K",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/fox-sports-4k"
+  },
+  {
+    "id": "foxsportshdr",
+    "name": "FOX Sports HDR",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/fox-sports-hdr"
+  },
+  {
+    "id": "ufc",
+    "name": "UFC",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/ufc"
+  },
+  {
+    "id": "f1tv",
+    "name": "F1 TV",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/f1-tv"
+  },
+  {
+    "id": "nbatv",
+    "name": "NBA TV",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/nba-tv"
+  },
+  {
+    "id": "motogp",
+    "name": "MotoGP",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/motogp"
+  },
+  {
+    "id": "tapsports",
+    "name": "Tap Sports",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/tap-sports"
+  },
+  {
+    "id": "unifisports1",
+    "name": "unifi Sports 1",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/unifi-sports-1"
+  },
+  {
+    "id": "spotv",
+    "name": "SPOTV",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/spotv"
+  },
+  {
+    "id": "spotv2",
+    "name": "SPOTV 2",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/spotv-2"
+  },
+  {
+    "id": "wsport",
+    "name": "W-Sport",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/w-sport"
+  },
+  {
+    "id": "onesportshd",
+    "name": "One Sports HD",
+    "type": "iframe",
+    "iframeSrc": "https://sportlink-tv10.pages.dev/Channel/one-sports-hd"
+  }
+]
   ]
 }
