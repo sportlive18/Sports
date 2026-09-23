@@ -1,0 +1,190 @@
+{
+  "iframes": [
+    {
+      "id": "ss1",
+      "name": "Star Sports 1",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Star_Sports_1"
+    },
+    {
+      "id": "ss1-hd",
+      "name": "Star Sports 1 HD",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Star_Sports_1_HD"
+    },
+    {
+      "id": "ss1-hindi",
+      "name": "Star Sports 1 Hindi",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Star_Sports_1_Hindi"
+    },
+    {
+      "id": "ss1-hindi-hd",
+      "name": "Star Sports 1 Hindi HD",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Star_Sports_1_Hindi_HD"
+    },
+    {
+      "id": "ss1-kannada",
+      "name": "Star Sports 1 Kannada",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Star_Sports_1_Kannada"
+    },
+    {
+      "id": "ss1-tamil",
+      "name": "Star Sports 1 Tamil",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Star_Sports_1_Tamil"
+    },
+    {
+      "id": "ss1-tamil-hd",
+      "name": "Star Sports 1 Tamil HD",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Star_Sports_1_Tamil_HD"
+    },
+    {
+      "id": "ss1-telugu",
+      "name": "Star Sports 1 Telugu",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Star_Sports_1_Telugu"
+    },
+    {
+      "id": "ss1-telugu-hd",
+      "name": "Star Sports 1 Telugu HD",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Star_Sports_1_Telugu_HD"
+    },
+    {
+      "id": "ss2",
+      "name": "Star Sports 2",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Star_Sports_2"
+    },
+    {
+      "id": "ss2-hd",
+      "name": "Star Sports 2 HD",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Star_Sports_2_HD"
+    },
+    {
+      "id": "ss2-hindi",
+      "name": "Star Sports 2 Hindi",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Star_Sports_2_Hindi"
+    },
+    {
+      "id": "ss2-hindi-hd",
+      "name": "Star Sports 2 Hindi HD",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Star_Sports_2_Hindi_HD"
+    },
+    {
+      "id": "ss2-kannada",
+      "name": "Star Sports 2 Kannada",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Star_Sports_2_Kannada"
+    },
+    {
+      "id": "ss2-tamil",
+      "name": "Star Sports 2 Tamil",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Star_Sports_2_Tamil"
+    },
+    {
+      "id": "ss2-tamil-hd",
+      "name": "Star Sports 2 Tamil HD",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Star_Sports_2_Tamil_HD"
+    },
+    {
+      "id": "ss2-telugu",
+      "name": "Star Sports 2 Telugu",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Star_Sports_2_Telugu"
+    },
+    {
+      "id": "ss2-telugu-hd",
+      "name": "Star Sports 2 Telugu HD",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Star_Sports_2_Telugu_HD"
+    },
+    {
+      "id": "ss3",
+      "name": "Star Sports 3",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Star_Sports_3"
+    },
+    {
+      "id": "ss-khel",
+      "name": "Star Sports Khel",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Star_Sports_Khel"
+    },
+    {
+      "id": "ss-select-1",
+      "name": "Star Sports Select 1",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Star_Sports_Select_1"
+    },
+    {
+      "id": "ss-select-1-hd",
+      "name": "Star Sports Select 1 HD",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Star_Sports_Select_1_HD"
+    },
+    {
+      "id": "ss-select-2",
+      "name": "Star Sports Select 2",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Star_Sports_Select_2"
+    },
+    {
+      "id": "ss-select-2-hd",
+      "name": "Star Sports Select 2 HD",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Star_Sports_Select_2_HD"
+    },
+    {
+      "id": "sony-ten-1-hd",
+      "name": "Sony Sports Ten 1 HD",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Sony_Sports_Ten_1_HD"
+    },
+    {
+      "id": "sony-ten-2-hd",
+      "name": "Sony Sports Ten 2 HD",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Sony_Sports_Ten_2_HD"
+    },
+    {
+      "id": "sony-ten-3-hindi-hd",
+      "name": "Sony Sports Ten 3 Hindi HD",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Sony_Sports_Ten_3_Hindi_HD"
+    },
+    {
+      "id": "sony-ten-4-kannada",
+      "name": "Sony Sports Ten 4 Kannada",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Sony_Sports_Ten_4_Kannada"
+    },
+    {
+      "id": "sony-ten-4-tamil",
+      "name": "Sony Sports Ten 4 Tamil",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Sony_Sports_Ten_4_Tamil"
+    },
+    {
+      "id": "sony-ten-4-telugu",
+      "name": "Sony Sports Ten 4 Telugu",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Sony_Sports_Ten_4_Telugu"
+    },
+    {
+      "id": "sony-ten-5-hd",
+      "name": "Sony Sports Ten 5 HD",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink-jtv.pages.dev/Channel/Sony_Sports_Ten_5_HD"
+    }
+  ]
+}
