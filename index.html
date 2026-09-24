@@ -2,14 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 <script src="https://pl31358401.profitableratecpmnetwork.com/a3/81/41/a38141b4ff99f6ef8dbf9dc5f76bd86b.js"></script>
 
 <title>Join @Sportlink</title>
 <link rel="icon" href="/sportlink.png">
 
-<!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-SMZXC121E6"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -117,9 +116,6 @@ html,body{width:100%;height:100%;background:#0a0a0f;font-family:'Segoe UI',sans-
 .channel-cat{color:#4a6fa5;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;}
 .no-results{color:#444;text-align:center;padding:40px 16px;font-size:14px;grid-column:1/-1;}
 
-/* ════════════════════════════════════════════
-   TELEGRAM POPUP
-════════════════════════════════════════════ */
 #tgOverlay {
   position: fixed;
   inset: 0;
@@ -238,7 +234,6 @@ html,body{width:100%;height:100%;background:#0a0a0f;font-family:'Segoe UI',sans-
 </head>
 <body>
 
-<!-- ====== SOCIAL BADGES ====== -->
 <div class="social-badges" id="social-badges">
   <a href="https://www.whatsapp.com/channel/0029VbC2oQsC6ZvmwpR3v73v" target="_blank" rel="noopener noreferrer" class="whatsapp-btn">
     <div class="whatsapp-icon">
@@ -248,10 +243,8 @@ html,body{width:100%;height:100%;background:#0a0a0f;font-family:'Segoe UI',sans-
   </a>
 </div>
 
-<!-- ====== MAIN IFRAME ====== -->
 <iframe id="main-iframe" allowfullscreen allow="encrypted-media; fullscreen; autoplay; picture-in-picture"></iframe>
 
-<!-- ====== PICKER ====== -->
 <div id="picker">
   <div class="picker-header">
     <div class="picker-title">⚡ <span>Live</span> Channels</div>
@@ -272,7 +265,6 @@ html,body{width:100%;height:100%;background:#0a0a0f;font-family:'Segoe UI',sans-
   <div class="channel-grid" id="channel-grid"></div>
 </div>
 
-<!-- ====== TELEGRAM POPUP ====== -->
 <div id="tgOverlay">
   <div id="tgCard">
     <div id="tgIcon">
@@ -289,10 +281,14 @@ html,body{width:100%;height:100%;background:#0a0a0f;font-family:'Segoe UI',sans-
   </div>
 </div>
 
-<!-- ====== CHANNEL LOADER SCRIPT ====== -->
 <script>
 window.addEventListener('DOMContentLoaded', function () {
-  var JSON_URL = 'https://sportlink-tv10.pages.dev/id.json';
+  'use strict';
+
+  var JSON_URLS = [
+    'https://sportlink-tv10.pages.dev/id.json'
+  ];
+  var FETCH_TIMEOUT = 10000;
 
   var urlParams    = new URLSearchParams(window.location.search);
   var id           = urlParams.get('id');
@@ -300,7 +296,55 @@ window.addEventListener('DOMContentLoaded', function () {
   var socialBadges = document.getElementById('social-badges');
   var picker       = document.getElementById('picker');
 
-  /* Hides the iframe + floating badges and shows the channel grid */
+  function normalise(raw) {
+    if (Array.isArray(raw)) return raw;
+    if (!raw || typeof raw !== 'object') return [];
+    if (Array.isArray(raw.iframes))  return raw.iframes;
+    if (Array.isArray(raw.channels)) return raw.channels;
+    if (Array.isArray(raw.data))     return raw.data;
+    return [raw];
+  }
+
+  function fetchWithTimeout(url, ms) {
+    var ctrl  = ('AbortController' in window) ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, ms);
+    var opts  = { cache: 'no-store' };
+    if (ctrl) opts.signal = ctrl.signal;
+
+    return fetch(url, opts).then(
+      function (res) { clearTimeout(timer); return res; },
+      function (err) { clearTimeout(timer); throw err; }
+    );
+  }
+
+  async function loadChannels() {
+    var errors = [];
+
+    for (var i = 0; i < JSON_URLS.length; i++) {
+      var url = JSON_URLS[i];
+      try {
+        var res = await fetchWithTimeout(url, FETCH_TIMEOUT);
+
+        if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + res.statusText);
+
+        var txt = await res.text();
+
+        try {
+          return JSON.parse(txt);
+        } catch (parseErr) {
+          throw new Error('response was not JSON (got HTML/404 page?)');
+        }
+      } catch (e) {
+        var reason = (e && e.name === 'AbortError')
+          ? 'timed out after ' + (FETCH_TIMEOUT / 1000) + 's'
+          : (e && e.message ? e.message : String(e));
+        errors.push(url + ' -> ' + reason);
+      }
+    }
+
+    throw new Error(errors.join('  |  '));
+  }
+
   function showPickerMode(channels) {
     socialBadges.style.display = 'none';
     iframe.style.display = 'none';
@@ -308,6 +352,9 @@ window.addEventListener('DOMContentLoaded', function () {
     renderChannels(channels);
 
     var search = document.getElementById('search-input');
+    if (search.dataset.bound === '1') return;
+    search.dataset.bound = '1';
+
     search.addEventListener('input', function (e) {
       var q = e.target.value.trim().toLowerCase();
       renderChannels(channels.filter(function (c) {
@@ -332,14 +379,13 @@ window.addEventListener('DOMContentLoaded', function () {
     var seen = new Set();
 
     channels.forEach(function (ch) {
-      // de-duplicate by id (falls back to name when there is no id)
       var key = (ch.id !== undefined && ch.id !== null) ? String(ch.id) : (ch.name || '');
       if (!key || seen.has(key)) return;
       seen.add(key);
 
       var card = document.createElement('a');
       card.className = 'channel-card';
-      card.href = '?id=' + encodeURIComponent(ch.id !== undefined ? ch.id : '');
+      card.href = '?id=' + encodeURIComponent(ch.id !== undefined && ch.id !== null ? ch.id : '');
 
       if (ch.logourl) {
         var img = document.createElement('img');
@@ -383,68 +429,98 @@ window.addEventListener('DOMContentLoaded', function () {
     socialBadges.style.display = 'none';
     iframe.style.display = 'none';
     picker.style.display = 'none';
-    var h2 = document.createElement('h2');
-    h2.style.cssText = 'color:#fff;text-align:center;font-family:sans-serif;position:absolute;width:100%;top:50%;transform:translateY(-50%);padding:0 20px;';
-    h2.textContent = msg;
-    document.body.appendChild(h2);
-  }
 
-  function normalise(raw) {
-    if (Array.isArray(raw)) return raw;
-    if (!raw || typeof raw !== 'object') return [];
-    if (Array.isArray(raw.iframes))  return raw.iframes;
-    if (Array.isArray(raw.channels)) return raw.channels;
-    if (Array.isArray(raw.data))     return raw.data;
-    return [raw];
-  }
+    var old = document.getElementById('error-screen');
+    if (old) old.parentNode.removeChild(old);
 
-  fetch(JSON_URL)
-    .then(function (res) {
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      return res.json();
-    })
-    .then(function (raw) {
-      var list = normalise(raw);
+    var box = document.createElement('div');
+    box.id = 'error-screen';
+    box.style.cssText =
+      'position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;' +
+      'justify-content:center;gap:14px;padding:24px;text-align:center;' +
+      'color:#fff;font-family:Segoe UI,sans-serif;';
 
-      if (!id) {                       // ── no ?id → channel picker
-        showPickerMode(list);
-        return;
-      }
+    var title = document.createElement('div');
+    title.style.cssText = 'font-size:18px;font-weight:700;';
+    title.textContent = 'Could not load channels';
 
-      var targetData = list.find(function (item) {
-        return String(item.id) === String(id);
-      });
+    var detail = document.createElement('div');
+    detail.style.cssText =
+      'font-size:12px;color:#8e9baf;max-width:460px;line-height:1.7;' +
+      'word-break:break-word;background:#141420;border:1px solid #1e1e30;' +
+      'border-radius:12px;padding:14px;';
+    detail.textContent = msg;
 
-      if (targetData && targetData.iframeSrc) {
-        // ── watch mode
-        iframe.src = targetData.iframeSrc;
-
-        if (targetData.hit) {
-          // fire-and-forget view counter (no-cors avoids console errors)
-          try {
-            fetch(targetData.hit, { mode: 'no-cors', keepalive: true }).catch(function () {});
-          } catch (e) { /* ignore */ }
-        }
-
-        // only nag for the Telegram channel when actually watching
-        if (typeof window.showTelegramPopup === 'function') {
-          window.showTelegramPopup();
-        }
-      } else {
-        // unknown / incomplete id → fall back to the picker
-        showPickerMode(list);
-      }
-    })
-    .catch(function () {
-      showError('Error loading channels');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = 'Retry';
+    btn.style.cssText =
+      'background:linear-gradient(135deg,#4fc3f7,#2196f3);color:#fff;border:none;' +
+      'border-radius:40px;padding:12px 32px;font-size:14px;font-weight:700;' +
+      'cursor:pointer;font-family:inherit;box-shadow:0 6px 24px rgba(79,195,247,.25);';
+    btn.addEventListener('click', function () {
+      box.parentNode.removeChild(box);
+      start();
     });
+
+    box.appendChild(title);
+    box.appendChild(detail);
+    box.appendChild(btn);
+    document.body.appendChild(box);
+  }
+
+  function boot(raw) {
+    var list = normalise(raw);
+
+    if (!list.length) {
+      showError('The JSON loaded but contained no channel entries.');
+      return;
+    }
+
+    if (!id) {
+      showPickerMode(list);
+      return;
+    }
+
+    var target = list.find(function (item) {
+      return String(item.id) === String(id);
+    });
+
+    if (target && target.iframeSrc) {
+      picker.style.display       = 'none';
+      socialBadges.style.display = '';
+      iframe.style.display       = 'block';
+      iframe.src                 = target.iframeSrc;
+
+      if (target.hit) {
+        try {
+          fetch(target.hit, { mode: 'no-cors', keepalive: true }).catch(function () {});
+        } catch (e) {}
+      }
+
+      if (typeof window.showTelegramPopup === 'function') {
+        window.showTelegramPopup();
+      }
+    } else {
+      showPickerMode(list);
+    }
+  }
+
+  function start() {
+    loadChannels()
+      .then(boot)
+      .catch(function (e) {
+        showError(e && e.message ? e.message : 'Unknown error');
+      });
+  }
+
+  start();
 });
 </script>
 
-<!-- ====== TELEGRAM POPUP SCRIPT ====== -->
 <script>
 (function () {
-  var TG_URL   = 'https://t.me/sportlink10';
+  var TG_URL    = 'https://t.me/sportlink10';
   var tgOverlay = document.getElementById('tgOverlay');
   var hasId     = new URLSearchParams(window.location.search).get('id');
   var timer     = null;
@@ -461,7 +537,6 @@ window.addEventListener('DOMContentLoaded', function () {
     try { return sessionStorage.getItem('tgPopupSeen') === '1'; } catch (e) { return false; }
   }
 
-  /* Called by the loader only once a stream is actually playing */
   window.showTelegramPopup = function () {
     if (!hasId || alreadySeen()) return;
     clearTimeout(timer);
