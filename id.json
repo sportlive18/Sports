@@ -1,6 +1,18 @@
 {
   "iframes": [
     {
+      "id": "fox"
+      "name": "Fox 501",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink10-ajp.pages.dev/ios?url=https://papacito.cfd/m3u/au-fox-sports-501-hd/live.m3u8"
+    },
+    {
+      "id": "sky"
+      "name": "Sky Cricket",
+      "type": "iframe",
+      "iframeSrc": "https://sportlink10-ajp.pages.dev/ios?url=https://papacito.cfd/m3u/now49499404/live.m3u8"
+    },
+    {
       "id": "ss1",
       "name": "Star Sports 1",
       "type": "iframe",
