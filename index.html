@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://pl31358401.profitableratecpmnetwork.com/a3/81/41/a38141b4ff99f6ef8dbf9dc5f76bd86b.js"></script>
 
@@ -22,7 +22,7 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{width:100%;height:100%;background:#0a0a0f;font-family:'Segoe UI',sans-serif;overflow:hidden;}
 
-#main-iframe{width:100%;height:100%;border:none;display:block;position:absolute;top:0;left:0;}
+#main-iframe{width:100%;height:100%;border:none;display:block;position:absolute;top:0;left:0;background:#0a0a0f;}
 
 .social-badges{
   position:absolute;top:15px;left:15px;z-index:9999;
@@ -49,13 +49,14 @@ html,body{width:100%;height:100%;background:#0a0a0f;font-family:'Segoe UI',sans-
 .whatsapp-icon{width:30px;height:30px;background:rgba(255,255,255,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;}
 .whatsapp-icon svg{width:17px;height:17px;fill:#fff;}
 
-#picker{position:absolute;inset:0;overflow-y:auto;background:#0a0a0f;display:none;}
+#picker{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#0a0a0f;display:none;}
 
 .picker-header{
   position:sticky;top:0;z-index:10;
   background:linear-gradient(180deg,#0a0a0f 80%,transparent);
   padding:20px 16px 10px;
   display:flex;align-items:center;justify-content:space-between;gap:12px;
+  flex-wrap:wrap;
 }
 .picker-title{color:#fff;font-size:20px;font-weight:700;letter-spacing:.5px;flex-shrink:0;}
 .picker-title span{color:#1e88e5;}
@@ -105,7 +106,7 @@ html,body{width:100%;height:100%;background:#0a0a0f;font-family:'Segoe UI',sans-
 }
 .channel-dot{
   width:10px;height:10px;border-radius:50%;background:#1e88e5;flex-shrink:0;
-  box-shadow:0 0 6px #1e88e5;margin:0 13px 0 13px;
+  box-shadow:0 0 6px #1e88e5;margin:0 13px;
 }
 .channel-info{min-width:0;display:flex;flex-direction:column;gap:3px;}
 .channel-name{
@@ -130,9 +131,11 @@ html,body{width:100%;height:100%;background:#0a0a0f;font-family:'Segoe UI',sans-
   justify-content: center;
   z-index: 999999;
   padding: 20px;
+}
+#tgOverlay.show {
+  display: flex;
   animation: fadeInPopup 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
-#tgOverlay.show { display: flex; }
 
 #tgCard {
   width: 100%;
@@ -237,7 +240,7 @@ html,body{width:100%;height:100%;background:#0a0a0f;font-family:'Segoe UI',sans-
 
 <!-- ====== SOCIAL BADGES ====== -->
 <div class="social-badges" id="social-badges">
-  <a href="https://www.whatsapp.com/channel/0029VbC2oQsC6ZvmwpR3v73v" target="_blank" class="whatsapp-btn">
+  <a href="https://www.whatsapp.com/channel/0029VbC2oQsC6ZvmwpR3v73v" target="_blank" rel="noopener noreferrer" class="whatsapp-btn">
     <div class="whatsapp-icon">
       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
     </div>
@@ -246,18 +249,18 @@ html,body{width:100%;height:100%;background:#0a0a0f;font-family:'Segoe UI',sans-
 </div>
 
 <!-- ====== MAIN IFRAME ====== -->
-<iframe id="main-iframe" allowfullscreen allow="encrypted-media; fullscreen; autoplay"></iframe>
+<iframe id="main-iframe" allowfullscreen allow="encrypted-media; fullscreen; autoplay; picture-in-picture"></iframe>
 
 <!-- ====== PICKER ====== -->
 <div id="picker">
   <div class="picker-header">
     <div class="picker-title">⚡ <span>Live</span> Channels</div>
     <div class="picker-links">
-      <a href="https://t.me/sportlink10" target="_blank" class="tg-link">
-        <svg viewBox="0 0 24 24"><path d="M9.993 15.674l-.398 5.604c.57 0 .817-.245 1.113-.54l2.67-2.557 5.53 4.047c1.014.558 1.734.264 1.987-.939l3.6-16.86.001-.001c.3-1.4-.506-1.95-1.496-1.58L1.27 9.64c-1.37.53-1.35 1.29-.233 1.64l5.68 1.77L19.29 5.73c.59-.39 1.13-.175.69.215"/></svg>
+      <a href="https://t.me/sportlink10" target="_blank" rel="noopener noreferrer" class="tg-link">
+        <svg viewBox="0 0 24 24"><path d="M9.993 15.674l-.398 5.604c.57 0 .817-.245 1.113-.54l2.67-2.557 5.53 4.047c1.014.558 1.734.264 1.987-.939l3.6-16.86.001-.001c.3-1.4-.506-1.95-1.496-1.58L1.27 9.64c-1.37.53-1.35 1.29-.233 1.64l5.68 1.77L19.29 5.73c.59-.39 1.13-.175.69.215z"/></svg>
         @Sportlink
       </a>
-      <a href="https://www.whatsapp.com/channel/0029VbC2oQsC6ZvmwpR3v73v" target="_blank" class="wa-link">
+      <a href="https://www.whatsapp.com/channel/0029VbC2oQsC6ZvmwpR3v73v" target="_blank" rel="noopener noreferrer" class="wa-link">
         <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
         WhatsApp
       </a>
@@ -288,112 +291,84 @@ html,body{width:100%;height:100%;background:#0a0a0f;font-family:'Segoe UI',sans-
 
 <!-- ====== CHANNEL LOADER SCRIPT ====== -->
 <script>
-window.addEventListener('DOMContentLoaded', () => {
-  const JSON_URL = 'https://sportlink-tv10.pages.dev/id.json';
+window.addEventListener('DOMContentLoaded', function () {
+  var JSON_URL = 'https://sportlink-tv10.pages.dev/id.json';
 
-  const urlParams   = new URLSearchParams(window.location.search);
-  const id          = urlParams.get('id');
-  const iframe      = document.getElementById('main-iframe');
-  const socialBadges= document.getElementById('social-badges');
-  const picker      = document.getElementById('picker');
+  var urlParams    = new URLSearchParams(window.location.search);
+  var id           = urlParams.get('id');
+  var iframe       = document.getElementById('main-iframe');
+  var socialBadges = document.getElementById('social-badges');
+  var picker       = document.getElementById('picker');
 
-  function normalise(raw) {
-    if (Array.isArray(raw)) return raw;
-    if (!raw || typeof raw !== 'object') return [];
-    if (Array.isArray(raw.iframes))  return raw.iframes;
-    if (Array.isArray(raw.channels)) return raw.channels;
-    if (Array.isArray(raw.data))     return raw.data;
-    return [raw];
-  }
-
-  fetch(JSON_URL)
-    .then(res => res.json())
-    .then(raw => {
-      const list = normalise(raw);
-
-      if (id) {
-        const targetData = list.find(item => String(item.id) === String(id));
-
-        if (targetData && targetData.iframeSrc) {
-          iframe.src = targetData.iframeSrc;
-          if (targetData.hit) fetch(targetData.hit).catch(() => {});
-        } else {
-          showPickerMode(list);
-        }
-      } else {
-        socialBadges.style.display = 'none';
-        iframe.style.display = 'none';
-        showPickerMode(list);
-      }
-    })
-    .catch(() => showError("Error loading channels"));
-
+  /* Hides the iframe + floating badges and shows the channel grid */
   function showPickerMode(channels) {
     socialBadges.style.display = 'none';
     iframe.style.display = 'none';
     picker.style.display = 'block';
     renderChannels(channels);
 
-    document.getElementById('search-input').addEventListener('input', e => {
-      const q = e.target.value.trim().toLowerCase();
-      renderChannels(channels.filter(c =>
-        (c.name || '').toLowerCase().includes(q) ||
-        (c.category || '').toLowerCase().includes(q)
-      ));
+    var search = document.getElementById('search-input');
+    search.addEventListener('input', function (e) {
+      var q = e.target.value.trim().toLowerCase();
+      renderChannels(channels.filter(function (c) {
+        return (c.name || '').toLowerCase().indexOf(q) !== -1 ||
+               (c.category || '').toLowerCase().indexOf(q) !== -1;
+      }));
     });
   }
 
   function renderChannels(channels) {
-    const grid = document.getElementById('channel-grid');
+    var grid = document.getElementById('channel-grid');
     grid.innerHTML = '';
 
     if (!channels.length) {
-      const empty = document.createElement('div');
+      var empty = document.createElement('div');
       empty.className = 'no-results';
       empty.textContent = 'No channels found';
       grid.appendChild(empty);
       return;
     }
 
-    const seen = new Set();
+    var seen = new Set();
 
-    channels.forEach(ch => {
-      const name = ch.name || 'Unnamed';
-      if (seen.has(name)) return;
-      seen.add(name);
+    channels.forEach(function (ch) {
+      // de-duplicate by id (falls back to name when there is no id)
+      var key = (ch.id !== undefined && ch.id !== null) ? String(ch.id) : (ch.name || '');
+      if (!key || seen.has(key)) return;
+      seen.add(key);
 
-      const card = document.createElement('a');
+      var card = document.createElement('a');
       card.className = 'channel-card';
-      card.href = '?id=' + encodeURIComponent(ch.id);
+      card.href = '?id=' + encodeURIComponent(ch.id !== undefined ? ch.id : '');
 
       if (ch.logourl) {
-        const img = document.createElement('img');
+        var img = document.createElement('img');
         img.className = 'channel-logo';
         img.src = ch.logourl;
         img.alt = '';
         img.loading = 'lazy';
-        img.onerror = () => {
-          const dot = document.createElement('div');
+        img.onerror = function () {
+          var dot = document.createElement('div');
           dot.className = 'channel-dot';
-          img.replaceWith(dot);
+          if (img.parentNode) img.parentNode.replaceChild(dot, img);
         };
         card.appendChild(img);
       } else {
-        const dot = document.createElement('div');
+        var dot = document.createElement('div');
         dot.className = 'channel-dot';
         card.appendChild(dot);
       }
 
-      const info = document.createElement('div');
+      var info = document.createElement('div');
       info.className = 'channel-info';
 
-      const nameEl = document.createElement('div');
+      var nameEl = document.createElement('div');
       nameEl.className = 'channel-name';
-      nameEl.textContent = name;
+      nameEl.textContent = ch.name || 'Unnamed';
       info.appendChild(nameEl);
 
       if (ch.category) {
-        const catEl = document.createElement('div');
+        var catEl = document.createElement('div');
         catEl.className = 'channel-cat';
         catEl.textContent = ch.category;
         info.appendChild(catEl);
@@ -407,51 +382,111 @@ window.addEventListener('DOMContentLoaded', () => {
   function showError(msg) {
     socialBadges.style.display = 'none';
     iframe.style.display = 'none';
-    const h2 = document.createElement('h2');
-    h2.style.cssText = 'color:#fff;text-align:center;font-family:sans-serif;position:absolute;width:100%;top:50%;transform:translateY(-50%);';
-    h2.innerText = msg;
+    picker.style.display = 'none';
+    var h2 = document.createElement('h2');
+    h2.style.cssText = 'color:#fff;text-align:center;font-family:sans-serif;position:absolute;width:100%;top:50%;transform:translateY(-50%);padding:0 20px;';
+    h2.textContent = msg;
     document.body.appendChild(h2);
   }
+
+  function normalise(raw) {
+    if (Array.isArray(raw)) return raw;
+    if (!raw || typeof raw !== 'object') return [];
+    if (Array.isArray(raw.iframes))  return raw.iframes;
+    if (Array.isArray(raw.channels)) return raw.channels;
+    if (Array.isArray(raw.data))     return raw.data;
+    return [raw];
+  }
+
+  fetch(JSON_URL)
+    .then(function (res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    })
+    .then(function (raw) {
+      var list = normalise(raw);
+
+      if (!id) {                       // ── no ?id → channel picker
+        showPickerMode(list);
+        return;
+      }
+
+      var targetData = list.find(function (item) {
+        return String(item.id) === String(id);
+      });
+
+      if (targetData && targetData.iframeSrc) {
+        // ── watch mode
+        iframe.src = targetData.iframeSrc;
+
+        if (targetData.hit) {
+          // fire-and-forget view counter (no-cors avoids console errors)
+          try {
+            fetch(targetData.hit, { mode: 'no-cors', keepalive: true }).catch(function () {});
+          } catch (e) { /* ignore */ }
+        }
+
+        // only nag for the Telegram channel when actually watching
+        if (typeof window.showTelegramPopup === 'function') {
+          window.showTelegramPopup();
+        }
+      } else {
+        // unknown / incomplete id → fall back to the picker
+        showPickerMode(list);
+      }
+    })
+    .catch(function () {
+      showError('Error loading channels');
+    });
 });
 </script>
 
 <!-- ====== TELEGRAM POPUP SCRIPT ====== -->
 <script>
 (function () {
-  const tgOverlay = document.getElementById('tgOverlay');
+  var TG_URL   = 'https://t.me/sportlink10';
+  var tgOverlay = document.getElementById('tgOverlay');
+  var hasId     = new URLSearchParams(window.location.search).get('id');
+  var timer     = null;
 
   function closePopup() {
     tgOverlay.classList.remove('show');
   }
 
-  // Show popup after 3 seconds
-  setTimeout(function () {
-    tgOverlay.classList.add('show');
-  }, 3000);
+  function markSeen() {
+    try { sessionStorage.setItem('tgPopupSeen', '1'); } catch (e) {}
+  }
 
-  // Join Now → open Telegram link, then close
-  document.getElementById('joinNow').onclick = function () {
-    window.open('https://t.me/sportlink10', '_blank');
-    closePopup();
+  function alreadySeen() {
+    try { return sessionStorage.getItem('tgPopupSeen') === '1'; } catch (e) { return false; }
+  }
+
+  /* Called by the loader only once a stream is actually playing */
+  window.showTelegramPopup = function () {
+    if (!hasId || alreadySeen()) return;
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      tgOverlay.classList.add('show');
+    }, 3000);
   };
 
-  // Already Joined → just close
-  document.getElementById('joinedBtn').onclick = function () {
+  document.getElementById('joinNow').addEventListener('click', function () {
+    markSeen();
+    window.open(TG_URL, '_blank', 'noopener');
     closePopup();
-  };
-
-  // Backdrop click → close
-  tgOverlay.addEventListener('click', function (e) {
-    if (e.target === tgOverlay) {
-      closePopup();
-    }
   });
 
-  // ESC key → close
+  document.getElementById('joinedBtn').addEventListener('click', function () {
+    markSeen();
+    closePopup();
+  });
+
+  tgOverlay.addEventListener('click', function (e) {
+    if (e.target === tgOverlay) closePopup();
+  });
+
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && tgOverlay.classList.contains('show')) {
-      closePopup();
-    }
+    if (e.key === 'Escape' && tgOverlay.classList.contains('show')) closePopup();
   });
 })();
 </script>
