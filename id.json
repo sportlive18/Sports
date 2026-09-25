@@ -13,6 +13,12 @@
       "iframeSrc": "https://sportlink10-ajp.pages.dev/ios?url=https://papacito.cfd/m3u/now49499404/live.m3u8"
     },
     {
+      "id": "Ten",
+      "name": "Ten Cricket",
+      "type": "iframe",
+      "iframeSrc": "https://robitv.com/lps/https://ml-pull-dvc-myco.io:2096/TENSPORTS_HD/mono.m3u8"
+    },
+    {
       "id": "ss1",
       "name": "Star Sports 1",
       "type": "iframe",
