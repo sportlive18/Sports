@@ -4,16 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="referrer" content="no-referrer" />
-  <title>Universal Player · YouTube + HLS</title>
+  <title>Universal Player · YouTube + HLS + MP4</title>
 
   <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
   <style>
     :root { --plyr-color-main: #0078e8; }
     * { box-sizing: border-box; }
     html, body {
       height: 100%; margin: 0; padding: 0;
-      background: #000;
+      background: #000; color: #fff;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       overflow: hidden;
     }
@@ -28,32 +29,37 @@
       position: relative;
     }
     .player-container.active { display: block; }
+
     .video-wrapper {
       position: relative;
       width: 100%; height: 100%;
       background: #000;
+      overflow: hidden;
     }
-    /* Plyr + video fills wrapper */
+    /* Make sure whatever player element is injected fills the wrapper */
     .video-wrapper > video,
-    .video-wrapper > .plyr,
-    .video-wrapper > .plyr__video-wrapper {
+    .video-wrapper > div:not(.loading-overlay):not(.error-message) {
       width: 100% !important;
       height: 100% !important;
       display: block;
     }
+    .video-wrapper .plyr,
+    .video-wrapper .plyr__video-wrapper,
     .video-wrapper iframe {
       width: 100% !important;
       height: 100% !important;
       border: 0;
     }
 
+    /* Loading overlay */
     .loading-overlay {
       position: absolute; inset: 0;
       background: rgba(0,0,0,0.9);
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       z-index: 30; color: #fff;
-      transition: opacity 0.3s;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
     }
     .loading-overlay.hidden { opacity: 0; pointer-events: none; }
     .spinner {
@@ -66,6 +72,7 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* Error message */
     .error-message {
       position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
@@ -76,9 +83,11 @@
       color: white; font-size: 1.1rem;
       max-width: 85%;
       box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+      border: 1px solid rgba(255,255,255,0.2);
     }
     .error-message h2 { margin: 0 0 8px; font-size: 1.3rem; }
 
+    /* URL panel */
     .url-panel {
       position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
@@ -110,6 +119,7 @@
       border-radius: 40px;
       font-size: 1.1rem; font-weight: 600;
       cursor: pointer; width: 100%;
+      transition: background 0.15s;
     }
     .url-panel button:hover { background: #0066cc; }
     .url-panel button:active { transform: scale(0.98); }
@@ -134,7 +144,7 @@
 <div class="app-container">
   <div class="player-container" id="playerContainer">
     <div class="video-wrapper" id="videoWrapper">
-      <!-- Player element is injected dynamically here -->
+      <!-- Player element is injected here dynamically -->
       <div class="loading-overlay hidden" id="loadingOverlay">
         <div class="spinner"></div>
         <p>Loading stream...</p>
@@ -145,7 +155,7 @@
   <div class="url-panel" id="urlPanel">
     <h2>🎬 Universal Player</h2>
     <p>Paste a YouTube link, .m3u8 stream, or MP4 URL</p>
-    <input type="text" id="videoUrlInput" placeholder="https://youtu.be/...  or  https://example.com/stream.m3u8" autofocus>
+    <input type="text" id="videoUrlInput" placeholder="https://youtu.be/... or https://example.com/stream.m3u8" autofocus>
     <button id="loadBtn">▶ Load video</button>
     <div class="example-links">
       <span data-example="https://www.youtube.com/watch?v=dQw4w9WgXcQ">▶ YouTube</span>
@@ -171,9 +181,9 @@
   const loadingOverlay  = document.getElementById('loadingOverlay');
 
   // ---------- STATE ----------
-  let plyr = null;
-  let hls  = null;
-  let playerEl = null; // current player element (video or div)
+  let plyr     = null;   // Plyr instance
+  let hls      = null;   // Hls instance
+  let playerEl = null;   // current player element (video OR div)
 
   // ---------- HELPERS ----------
   function showLoading(show) {
@@ -194,33 +204,25 @@
     videoWrapper.appendChild(div);
   }
 
+  // Destroy ANY previous player + remove element from DOM
   function cleanupPlayer() {
-    if (hls) { try { hls.destroy(); } catch(e){} hls = null; }
-    if (plyr) { try { plyr.destroy(); } catch(e){} plyr = null; }
+    if (hls) { try { hls.destroy(); } catch (e) {} hls = null; }
+    if (plyr) { try { plyr.destroy(); } catch (e) {} plyr = null; }
     if (playerEl && playerEl.parentNode) playerEl.parentNode.removeChild(playerEl);
     playerEl = null;
     clearError();
   }
 
-  // ---------- YouTube ID ----------
+  // ---------- YouTube ID extractor ----------
   function getYouTubeID(url) {
     if (!url) return null;
     const u = url.trim();
-    // youtu.be/ID
-    let m = u.match(/youtu\.be\/([A-Za-z0-9_-]{11})/);
-    if (m) return m[1];
-    // /shorts/ID
-    m = u.match(/\/shorts\/([A-Za-z0-9_-]{11})/);
-    if (m) return m[1];
-    // /live/ID
-    m = u.match(/\/live\/([A-Za-z0-9_-]{11})/);
-    if (m) return m[1];
-    // /embed/ID
-    m = u.match(/\/embed\/([A-Za-z0-9_-]{11})/);
-    if (m) return m[1];
-    // ?v=ID
-    m = u.match(/[?&]v=([A-Za-z0-9_-]{11})/);
-    if (m) return m[1];
+    let m;
+    m = u.match(/youtu\.be\/([A-Za-z0-9_-]{11})/);       if (m) return m[1];
+    m = u.match(/\/shorts\/([A-Za-z0-9_-]{11})/);        if (m) return m[1];
+    m = u.match(/\/live\/([A-Za-z0-9_-]{11})/);          if (m) return m[1];
+    m = u.match(/\/embed\/([A-Za-z0-9_-]{11})/);         if (m) return m[1];
+    m = u.match(/[?&]v=([A-Za-z0-9_-]{11})/);            if (m) return m[1];
     return null;
   }
 
@@ -228,7 +230,7 @@
     return url && url.toLowerCase().includes('.m3u8');
   }
 
-  // ---------- LOAD ----------
+  // ---------- MAIN LOADER ----------
   function loadVideo(rawUrl) {
     if (!rawUrl) return;
     const url = rawUrl.trim();
@@ -237,20 +239,22 @@
     urlPanel.classList.add('hidden');
     playerContainer.classList.add('active');
 
-    // Clean up any previous player entirely
+    // Always fully clean up first
     cleanupPlayer();
 
-    const ytId    = getYouTubeID(url);
+    const ytId     = getYouTubeID(url);
     const isHlsUrl = isHls(url);
 
-    // ========== YOUTUBE ==========
+    /* ============ YOUTUBE ============ */
     if (ytId) {
       showLoading(false);
 
-      // YouTube needs a DIV, not a video element
+      // YouTube needs a <div>, NOT a <video>
       playerEl = document.createElement('div');
       playerEl.id = 'ytPlayer';
-      // Insert before the loading overlay
+      playerEl.style.width  = '100%';
+      playerEl.style.height = '100%';
+      // Insert BEFORE the loading overlay so overlay stays on top
       videoWrapper.insertBefore(playerEl, loadingOverlay);
 
       plyr = new Plyr(playerEl, {
@@ -268,7 +272,7 @@
         }
       });
 
-      // Load the youtube video via Plyr source API
+      // Tell Plyr to load YouTube source
       plyr.source = {
         type: 'video',
         sources: [{
@@ -279,7 +283,7 @@
       return;
     }
 
-    // ========== HLS ==========
+    /* ============ HLS (.m3u8) ============ */
     if (isHlsUrl && window.Hls && Hls.isSupported()) {
       showLoading(true);
 
@@ -301,43 +305,46 @@
 
       hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
         const levels = data.levels || [];
-        const heights = levels.map(l => l.height).filter(Boolean);
-        const uniqueHeights = Array.from(new Set(heights)).sort((a,b) => b - a);
-        const qualityOptions = [0, ...uniqueHeights];
-        const defaultQ = uniqueHeights.includes(720) ? 720 : 0;
+        const heights = levels.map(function (l) { return l.height; }).filter(Boolean);
+        const uniqueHeights = Array.from(new Set(heights)).sort(function (a, b) { return b - a; });
+        const qualityOptions = [0].concat(uniqueHeights); // 0 = Auto
+        const defaultQ = uniqueHeights.indexOf(720) !== -1 ? 720 : 0;
 
-        if (plyr) plyr.destroy();
+        if (plyr) { try { plyr.destroy(); } catch (e) {} }
         plyr = new Plyr(playerEl, {
           autoplay: true,
           playsinline: true,
           controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'pip', 'fullscreen'],
-          settings: ['quality', 'speed'],
+          settings: ['quality', 'speed', 'captions'],
           speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2] },
           quality: {
             default: defaultQ,
             options: qualityOptions,
             forced: true,
             onChange: function (newQ) {
+              if (!hls) return;
               showLoading(true);
               if (newQ === 0) {
                 hls.currentLevel = -1;
               } else {
-                const idx = hls.levels.findIndex(l => l.height === newQ);
+                const idx = hls.levels.findIndex(function (l) { return l.height === newQ; });
                 if (idx !== -1) hls.currentLevel = idx;
               }
             }
           }
         });
 
-        plyr.on('playing', () => showLoading(false));
-        plyr.on('canplay', () => showLoading(false));
-        plyr.on('waiting', () => showLoading(true));
-        plyr.on('error',   () => displayError('Playback error.'));
+        // Hide loader on playback events
+        plyr.on('playing', function () { showLoading(false); });
+        plyr.on('canplay', function () { showLoading(false); });
+        plyr.on('waiting', function () { showLoading(true); });
+        plyr.on('error',   function () { displayError('Playback error. Check the stream URL.'); });
 
-        playerEl.play().catch(e => console.warn('Autoplay blocked:', e));
+        // HLS level switched → hide loader
+        hls.on(Hls.Events.LEVEL_SWITCHED, function () { showLoading(false); });
+
+        playerEl.play().catch(function (e) { console.warn('Autoplay blocked:', e); });
       });
-
-      hls.on(Hls.Events.LEVEL_SWITCHED, () => showLoading(false));
 
       hls.on(Hls.Events.ERROR, function (event, data) {
         if (!data.fatal) return;
@@ -352,13 +359,13 @@
           default:
             displayError('HLS error: ' + (data.details || 'unknown'));
         }
-        if (hls) { try { hls.destroy(); } catch(e){} hls = null; }
+        if (hls) { try { hls.destroy(); } catch (e) {} hls = null; }
       });
 
       return;
     }
 
-    // ========== MP4 / FILE ==========
+    /* ============ MP4 / DIRECT FILE ============ */
     showLoading(false);
 
     playerEl = document.createElement('video');
@@ -377,27 +384,29 @@
       speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2] }
     });
 
-    playerEl.addEventListener('error', () => {
+    playerEl.addEventListener('error', function () {
       displayError('Failed to load video. Unsupported format or network issue.');
     });
 
-    playerEl.play().catch(e => console.warn('Autoplay blocked:', e));
+    playerEl.play().catch(function (e) { console.warn('Autoplay blocked:', e); });
   }
 
-  // ---------- QUERY PARAMS ----------
+  // ---------- INIT FROM QUERY PARAMS ----------
   function initFromQuery() {
     const params = new URLSearchParams(window.location.search);
     let url = params.get('url') || params.get('ios');
+
     if (url) {
-      try { url = decodeURIComponent(url); } catch(e){}
+      try { url = decodeURIComponent(url); } catch (e) {}
       urlPanel.classList.add('hidden');
       playerContainer.classList.add('active');
-      // Small delay to ensure DOM is ready
-      setTimeout(() => loadVideo(url), 50);
+      // Wait a tick so DOM is ready
+      setTimeout(function () { loadVideo(url); }, 50);
     } else {
       urlPanel.classList.remove('hidden');
       playerContainer.classList.remove('active');
-      setTimeout(() => urlInput && urlInput.focus(), 200);
+      showLoading(false);
+      setTimeout(function () { if (urlInput) urlInput.focus(); }, 200);
     }
   }
 
@@ -409,7 +418,7 @@
       const u = new URL(window.location);
       u.searchParams.set('url', url);
       window.history.pushState({}, '', u);
-    } catch(e){}
+    } catch (e) {}
     loadVideo(url);
   });
 
@@ -427,8 +436,8 @@
   window.addEventListener('popstate', initFromQuery);
 
   window.addEventListener('beforeunload', function () {
-    if (hls) hls.destroy();
-    if (plyr) plyr.destroy();
+    if (hls) { try { hls.destroy(); } catch (e) {} }
+    if (plyr) { try { plyr.destroy(); } catch (e) {} }
   });
 
   // ---------- START ----------
