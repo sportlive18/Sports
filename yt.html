@@ -6,252 +6,135 @@
   <meta name="referrer" content="no-referrer" />
   <title>Universal Player · YouTube + HLS</title>
 
-  <!-- Plyr CSS -->
   <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-  <!-- Font Awesome (optional) -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
   <style>
-    /* ---------- GLOBAL ---------- */
-    :root {
-      --plyr-color-main: #0078e8;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
+    :root { --plyr-color-main: #0078e8; }
+    * { box-sizing: border-box; }
     html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
+      height: 100%; margin: 0; padding: 0;
       background: #000;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       overflow: hidden;
     }
-
-    /* ---------- APP CONTAINER ---------- */
     .app-container {
       position: relative;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
     }
-
-    /* ---------- PLAYER CONTAINER (hidden initially) ---------- */
     .player-container {
-      display: none;           /* toggled by JS */
-      width: 100%;
-      height: 100%;
+      display: none;
+      width: 100%; height: 100%;
       position: relative;
     }
-
-    .player-container.active {
-      display: block;
-    }
-
-    /* Video wrapper fills container */
+    .player-container.active { display: block; }
     .video-wrapper {
       position: relative;
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       background: #000;
     }
-
-    /* The Plyr video element (or container for YouTube) */
-    #plyrVideo {
-      width: 100%;
-      height: 100%;
-      display: block;
-      outline: none;
-    }
-
-    /* For YouTube, Plyr replaces the video element with a div – ensure it fills */
-    .plyr,
-    .plyr__video-wrapper,
-    .plyr iframe {
+    /* Plyr + video fills wrapper */
+    .video-wrapper > video,
+    .video-wrapper > .plyr,
+    .video-wrapper > .plyr__video-wrapper {
       width: 100% !important;
       height: 100% !important;
+      display: block;
+    }
+    .video-wrapper iframe {
+      width: 100% !important;
+      height: 100% !important;
+      border: 0;
     }
 
-    /* ---------- LOADING OVERLAY (HLS) ---------- */
     .loading-overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.9);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 30;
-      opacity: 1;
-      transition: opacity 0.3s ease;
-      color: #fff;
-      pointer-events: none;
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.9);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 30; color: #fff;
+      transition: opacity 0.3s;
     }
-
-    .loading-overlay.hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
-
+    .loading-overlay.hidden { opacity: 0; pointer-events: none; }
     .spinner {
-      width: 50px;
-      height: 50px;
-      border: 4px solid rgba(255, 255, 255, 0.2);
+      width: 50px; height: 50px;
+      border: 4px solid rgba(255,255,255,0.2);
       border-top-color: var(--plyr-color-main);
       border-radius: 50%;
       animation: spin 1s linear infinite;
       margin-bottom: 12px;
     }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /* ---------- ERROR MESSAGE ---------- */
     .error-message {
-      position: absolute;
-      top: 50%;
-      left: 50%;
+      position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       padding: 24px 28px;
-      background-color: rgba(180, 0, 0, 0.95);
+      background: rgba(180,0,0,0.95);
       border-radius: 12px;
-      text-align: center;
-      z-index: 99;
-      color: white;
-      font-size: 1.1rem;
+      text-align: center; z-index: 99;
+      color: white; font-size: 1.1rem;
       max-width: 85%;
       box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-      border: 1px solid rgba(255,255,255,0.2);
     }
+    .error-message h2 { margin: 0 0 8px; font-size: 1.3rem; }
 
-    .error-message h2 {
-      font-weight: 700;
-      margin-bottom: 8px;
-      font-size: 1.3rem;
-    }
-
-    .error-message code {
-      background: rgba(0,0,0,0.4);
-      padding: 2px 8px;
-      border-radius: 16px;
-      font-size: 0.9rem;
-      word-break: break-all;
-    }
-
-    /* ---------- URL PANEL ---------- */
     .url-panel {
-      position: absolute;
-      top: 50%;
-      left: 50%;
+      position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       background: #111;
       border: 1px solid #333;
       border-radius: 24px;
       padding: 28px 24px;
-      width: 90%;
-      max-width: 560px;
+      width: 90%; max-width: 560px;
       z-index: 200;
       box-shadow: 0 20px 40px rgba(0,0,0,0.8);
-      text-align: center;
-      color: #eee;
-      backdrop-filter: blur(6px);
+      text-align: center; color: #eee;
     }
-
-    .url-panel.hidden {
-      display: none;
-    }
-
-    .url-panel h2 {
-      font-weight: 500;
-      margin-top: 0;
-      margin-bottom: 16px;
-      font-size: 1.6rem;
-      color: #fff;
-    }
-
-    .url-panel p {
-      font-size: 0.95rem;
-      opacity: 0.75;
-      margin-bottom: 24px;
-      line-height: 1.4;
-    }
-
+    .url-panel.hidden { display: none; }
+    .url-panel h2 { margin: 0 0 16px; font-size: 1.6rem; color: #fff; font-weight: 500; }
+    .url-panel p { font-size: 0.95rem; opacity: 0.75; margin: 0 0 24px; }
     .url-panel input {
-      width: 100%;
-      padding: 14px 18px;
+      width: 100%; padding: 14px 18px;
       border-radius: 40px;
       border: 1px solid #444;
-      background: #222;
-      color: #fff;
-      font-size: 1rem;
-      outline: none;
-      transition: border 0.15s;
+      background: #222; color: #fff;
+      font-size: 1rem; outline: none;
       margin-bottom: 18px;
     }
-
-    .url-panel input:focus {
-      border-color: var(--plyr-color-main);
-    }
-
+    .url-panel input:focus { border-color: var(--plyr-color-main); }
     .url-panel button {
       background: var(--plyr-color-main);
-      border: none;
-      color: white;
+      border: none; color: white;
       padding: 14px 32px;
       border-radius: 40px;
-      font-size: 1.1rem;
-      font-weight: 600;
-      cursor: pointer;
-      width: 100%;
-      transition: background 0.15s, transform 0.1s;
-      letter-spacing: 0.3px;
+      font-size: 1.1rem; font-weight: 600;
+      cursor: pointer; width: 100%;
     }
+    .url-panel button:hover { background: #0066cc; }
+    .url-panel button:active { transform: scale(0.98); }
 
-    .url-panel button:hover {
-      background: #0066cc;
-    }
-
-    .url-panel button:active {
-      transform: scale(0.98);
-    }
-
-    .url-panel .example-links {
+    .example-links {
       margin-top: 20px;
-      font-size: 0.8rem;
-      opacity: 0.6;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: center;
+      display: flex; flex-wrap: wrap;
+      gap: 8px; justify-content: center;
+      font-size: 0.8rem; opacity: 0.7;
     }
-
-    .url-panel .example-links span {
+    .example-links span {
       background: #2a2a2a;
-      padding: 4px 12px;
+      padding: 5px 14px;
       border-radius: 30px;
       cursor: pointer;
-      transition: background 0.15s;
     }
-
-    .url-panel .example-links span:hover {
-      background: #3a3a3a;
-    }
+    .example-links span:hover { background: #3a3a3a; }
   </style>
 </head>
 <body>
 
 <div class="app-container">
-  <!-- ---------- PLAYER CONTAINER ---------- -->
   <div class="player-container" id="playerContainer">
     <div class="video-wrapper" id="videoWrapper">
-      <video id="plyrVideo" playsinline controls crossorigin="anonymous"></video>
-
-      <!-- Loading overlay for HLS -->
+      <!-- Player element is injected dynamically here -->
       <div class="loading-overlay hidden" id="loadingOverlay">
         <div class="spinner"></div>
         <p>Loading stream...</p>
@@ -259,243 +142,234 @@
     </div>
   </div>
 
-  <!-- ---------- URL INPUT PANEL ---------- -->
   <div class="url-panel" id="urlPanel">
     <h2>🎬 Universal Player</h2>
-    <p>Paste a YouTube link or an <strong>.m3u8</strong> / video URL</p>
+    <p>Paste a YouTube link, .m3u8 stream, or MP4 URL</p>
     <input type="text" id="videoUrlInput" placeholder="https://youtu.be/...  or  https://example.com/stream.m3u8" autofocus>
     <button id="loadBtn">▶ Load video</button>
     <div class="example-links">
-      <span data-example="https://www.youtube.com/watch?v=dQw4w9WgXcQ">YouTube example</span>
-      <span data-example="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8">HLS example</span>
-      <span data-example="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4">MP4 example</span>
+      <span data-example="https://www.youtube.com/watch?v=dQw4w9WgXcQ">▶ YouTube</span>
+      <span data-example="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8">▶ HLS</span>
+      <span data-example="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4">▶ MP4</span>
     </div>
   </div>
 </div>
 
-<!-- ---------- LIBRARIES ---------- -->
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.min.js"></script>
 
 <script>
-(function() {
+(function () {
   'use strict';
 
-  // ---------- DOM ELEMENTS ----------
-  const videoElement    = document.getElementById('plyrVideo');
+  // ---------- DOM ----------
   const playerContainer = document.getElementById('playerContainer');
+  const videoWrapper    = document.getElementById('videoWrapper');
   const urlPanel        = document.getElementById('urlPanel');
   const urlInput        = document.getElementById('videoUrlInput');
   const loadBtn         = document.getElementById('loadBtn');
   const loadingOverlay  = document.getElementById('loadingOverlay');
-  const videoWrapper    = document.getElementById('videoWrapper');
 
   // ---------- STATE ----------
-  let plyr = null;              // Plyr instance
-  let hls  = null;              // Hls instance
-  let currentSourceType = null; // 'youtube' | 'hls' | 'file'
+  let plyr = null;
+  let hls  = null;
+  let playerEl = null; // current player element (video or div)
 
   // ---------- HELPERS ----------
   function showLoading(show) {
-    if (show) loadingOverlay.classList.remove('hidden');
-    else      loadingOverlay.classList.add('hidden');
+    loadingOverlay.classList.toggle('hidden', !show);
   }
 
   function clearError() {
-    const err = document.querySelector('.error-message');
+    const err = videoWrapper.querySelector('.error-message');
     if (err) err.remove();
   }
 
-  function displayError(message) {
+  function displayError(msg) {
     showLoading(false);
     clearError();
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'error-message';
-    errorDiv.innerHTML = `<h2>⚠️ Stream Error</h2><p>${message}</p>`;
-    videoWrapper.appendChild(errorDiv);
+    const div = document.createElement('div');
+    div.className = 'error-message';
+    div.innerHTML = '<h2>⚠️ Stream Error</h2><p>' + msg + '</p>';
+    videoWrapper.appendChild(div);
   }
 
-  function destroyPlayer() {
-    if (hls) {
-      hls.destroy();
-      hls = null;
-    }
-    if (plyr) {
-      plyr.destroy();
-      plyr = null;
-    }
-    // Reset video element
-    videoElement.removeAttribute('src');
-    videoElement.removeAttribute('data-plyr-provider');
-    videoElement.removeAttribute('data-plyr-embed-id');
-    try { videoElement.load(); } catch(e) {}
-    currentSourceType = null;
+  function cleanupPlayer() {
+    if (hls) { try { hls.destroy(); } catch(e){} hls = null; }
+    if (plyr) { try { plyr.destroy(); } catch(e){} plyr = null; }
+    if (playerEl && playerEl.parentNode) playerEl.parentNode.removeChild(playerEl);
+    playerEl = null;
+    clearError();
   }
 
-  // ---------- YOUTUBE ID EXTRACTION ----------
-  function extractYouTubeID(url) {
+  // ---------- YouTube ID ----------
+  function getYouTubeID(url) {
     if (!url) return null;
-    // Normalise
-    let clean = url.trim();
-
+    const u = url.trim();
     // youtu.be/ID
-    if (clean.includes('youtu.be/')) {
-      return clean.split('youtu.be/')[1]?.split(/[?&]/)[0] || null;
-    }
-    // youtube.com/live/ID
-    if (clean.includes('/live/')) {
-      return clean.split('/live/')[1]?.split(/[?&]/)[0] || null;
-    }
-    // youtube.com/shorts/ID
-    if (clean.includes('/shorts/')) {
-      return clean.split('/shorts/')[1]?.split(/[?&]/)[0] || null;
-    }
-    // standard watch?v=
-    try {
-      const u = new URL(clean);
-      const v = u.searchParams.get('v');
-      if (v) return v;
-    } catch(e) { /* ignore */ }
-
-    // fallback regex
-    const m = clean.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
-    return m ? m[1] : null;
+    let m = u.match(/youtu\.be\/([A-Za-z0-9_-]{11})/);
+    if (m) return m[1];
+    // /shorts/ID
+    m = u.match(/\/shorts\/([A-Za-z0-9_-]{11})/);
+    if (m) return m[1];
+    // /live/ID
+    m = u.match(/\/live\/([A-Za-z0-9_-]{11})/);
+    if (m) return m[1];
+    // /embed/ID
+    m = u.match(/\/embed\/([A-Za-z0-9_-]{11})/);
+    if (m) return m[1];
+    // ?v=ID
+    m = u.match(/[?&]v=([A-Za-z0-9_-]{11})/);
+    if (m) return m[1];
+    return null;
   }
 
-  function isHlsUrl(url) {
+  function isHls(url) {
     return url && url.toLowerCase().includes('.m3u8');
   }
 
-  // ---------- MAIN LOAD FUNCTION ----------
-  function loadVideoFromUrl(rawUrl) {
-    if (!rawUrl || rawUrl.trim() === '') {
-      alert('Please enter a valid URL');
-      return;
-    }
-
+  // ---------- LOAD ----------
+  function loadVideo(rawUrl) {
+    if (!rawUrl) return;
     const url = rawUrl.trim();
+    if (!url) return;
 
-    // Hide panel, show player
     urlPanel.classList.add('hidden');
     playerContainer.classList.add('active');
 
-    // Destroy previous
-    destroyPlayer();
-    clearError();
+    // Clean up any previous player entirely
+    cleanupPlayer();
 
-    const youtubeId = extractYouTubeID(url);
-    const hlsCheck  = isHlsUrl(url);
+    const ytId    = getYouTubeID(url);
+    const isHlsUrl = isHls(url);
 
-    // ----- YOUTUBE -----
-    if (youtubeId) {
-      currentSourceType = 'youtube';
+    // ========== YOUTUBE ==========
+    if (ytId) {
       showLoading(false);
 
-      // Set data attributes for Plyr YouTube
-      videoElement.setAttribute('data-plyr-provider', 'youtube');
-      videoElement.setAttribute('data-plyr-embed-id', youtubeId);
+      // YouTube needs a DIV, not a video element
+      playerEl = document.createElement('div');
+      playerEl.id = 'ytPlayer';
+      // Insert before the loading overlay
+      videoWrapper.insertBefore(playerEl, loadingOverlay);
 
-      plyr = new Plyr(videoElement, {
+      plyr = new Plyr(playerEl, {
         autoplay: true,
         muted: true,
         clickToPlay: false,
         controls: ['play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'pip', 'airplay', 'fullscreen'],
+        settings: ['speed'],
         youtube: {
           noCookie: true,
-          params: { modestbranding: 1, rel: 0, iv_load_policy: 3, playsinline: 1 }
+          rel: 0,
+          showinfo: 0,
+          iv_load_policy: 3,
+          modestbranding: 1
         }
       });
+
+      // Load the youtube video via Plyr source API
+      plyr.source = {
+        type: 'video',
+        sources: [{
+          src: ytId,
+          provider: 'youtube'
+        }]
+      };
       return;
     }
 
-    // ----- HLS (.m3u8) -----
-    if (hlsCheck && Hls.isSupported()) {
-      currentSourceType = 'hls';
+    // ========== HLS ==========
+    if (isHlsUrl && window.Hls && Hls.isSupported()) {
       showLoading(true);
 
-      // Remove YouTube attributes
-      videoElement.removeAttribute('data-plyr-provider');
-      videoElement.removeAttribute('data-plyr-embed-id');
+      playerEl = document.createElement('video');
+      playerEl.id = 'hlsVideo';
+      playerEl.setAttribute('playsinline', '');
+      playerEl.setAttribute('controls', '');
+      playerEl.setAttribute('crossorigin', 'anonymous');
+      videoWrapper.insertBefore(playerEl, loadingOverlay);
 
       hls = new Hls({
-        crossOrigin: 'anonymous',
-        withCredentials: false,
-        startLevel: -1
+        enableWorker: true,
+        lowLatencyMode: false,
+        backBufferLength: 90
       });
 
       hls.loadSource(url);
-      hls.attachMedia(videoElement);
+      hls.attachMedia(playerEl);
 
-      hls.on(Hls.Events.MANIFEST_PARSED, function(event, data) {
-        // Build quality options
+      hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
         const levels = data.levels || [];
         const heights = levels.map(l => l.height).filter(Boolean);
-        const uniqueHeights = [...new Set(heights)].sort((a,b) => b - a);
-        const qualityOptions = [0, ...uniqueHeights]; // 0 = Auto
-        const defaultQuality = uniqueHeights.includes(720) ? 720 : 0;
+        const uniqueHeights = Array.from(new Set(heights)).sort((a,b) => b - a);
+        const qualityOptions = [0, ...uniqueHeights];
+        const defaultQ = uniqueHeights.includes(720) ? 720 : 0;
 
-        const plyrConfig = {
+        if (plyr) plyr.destroy();
+        plyr = new Plyr(playerEl, {
           autoplay: true,
           playsinline: true,
           controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'pip', 'fullscreen'],
-          settings: ['quality', 'speed', 'captions'],
+          settings: ['quality', 'speed'],
           speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2] },
           quality: {
-            default: defaultQuality,
+            default: defaultQ,
             options: qualityOptions,
             forced: true,
-            onChange: function(newQuality) {
+            onChange: function (newQ) {
               showLoading(true);
-              if (newQuality === 0) {
-                hls.currentLevel = -1; // auto
+              if (newQ === 0) {
+                hls.currentLevel = -1;
               } else {
-                const idx = hls.levels.findIndex(l => l.height === newQuality);
+                const idx = hls.levels.findIndex(l => l.height === newQ);
                 if (idx !== -1) hls.currentLevel = idx;
               }
             }
           }
-        };
+        });
 
-        if (plyr) plyr.destroy();
-        plyr = new Plyr(videoElement, plyrConfig);
+        plyr.on('playing', () => showLoading(false));
+        plyr.on('canplay', () => showLoading(false));
+        plyr.on('waiting', () => showLoading(true));
+        plyr.on('error',   () => displayError('Playback error.'));
 
-        // Hide loading when ready
-        hls.on(Hls.Events.LEVEL_SWITCHED, () => showLoading(false));
-        plyr.on('playing',  () => showLoading(false));
-        plyr.on('canplay',  () => showLoading(false));
-        plyr.on('waiting',  () => showLoading(true));
-        plyr.on('error',    () => displayError('Playback error. Check the stream URL.'));
-
-        videoElement.play().catch(e => console.warn('Autoplay blocked', e));
+        playerEl.play().catch(e => console.warn('Autoplay blocked:', e));
       });
 
-      hls.on(Hls.Events.ERROR, function(event, data) {
-        if (data.fatal) {
-          switch (data.type) {
-            case Hls.ErrorTypes.NETWORK_ERROR:
-              displayError('Network error – could not load HLS stream.');
-              break;
-            case Hls.ErrorTypes.MEDIA_ERROR:
-              displayError('Media error – the stream may be corrupted.');
-              break;
-            default:
-              displayError('HLS fatal error: ' + (data.reason || 'unknown'));
-          }
-          if (hls) { hls.destroy(); hls = null; }
+      hls.on(Hls.Events.LEVEL_SWITCHED, () => showLoading(false));
+
+      hls.on(Hls.Events.ERROR, function (event, data) {
+        if (!data.fatal) return;
+        console.error('HLS fatal error:', data);
+        switch (data.type) {
+          case Hls.ErrorTypes.NETWORK_ERROR:
+            displayError('Network error – cannot load HLS stream.');
+            break;
+          case Hls.ErrorTypes.MEDIA_ERROR:
+            displayError('Media error – the stream may be corrupted.');
+            break;
+          default:
+            displayError('HLS error: ' + (data.details || 'unknown'));
         }
+        if (hls) { try { hls.destroy(); } catch(e){} hls = null; }
       });
+
       return;
     }
 
-    // ----- DIRECT FILE (MP4, etc.) -----
-    currentSourceType = 'file';
+    // ========== MP4 / FILE ==========
     showLoading(false);
 
-    videoElement.removeAttribute('data-plyr-provider');
-    videoElement.removeAttribute('data-plyr-embed-id');
-    videoElement.src = url;
+    playerEl = document.createElement('video');
+    playerEl.id = 'fileVideo';
+    playerEl.setAttribute('playsinline', '');
+    playerEl.setAttribute('controls', '');
+    playerEl.setAttribute('crossorigin', 'anonymous');
+    playerEl.src = url;
+    videoWrapper.insertBefore(playerEl, loadingOverlay);
 
-    plyr = new Plyr(videoElement, {
+    plyr = new Plyr(playerEl, {
       autoplay: true,
       playsinline: true,
       controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'pip', 'fullscreen'],
@@ -503,81 +377,66 @@
       speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2] }
     });
 
-    videoElement.addEventListener('error', () => {
-      displayError('Failed to load video file. Unsupported format or network issue.');
+    playerEl.addEventListener('error', () => {
+      displayError('Failed to load video. Unsupported format or network issue.');
     });
 
-    videoElement.play().catch(e => console.warn('Autoplay blocked', e));
+    playerEl.play().catch(e => console.warn('Autoplay blocked:', e));
   }
 
-  // ---------- INIT FROM QUERY PARAMS ----------
-  function initFromQueryParams() {
+  // ---------- QUERY PARAMS ----------
+  function initFromQuery() {
     const params = new URLSearchParams(window.location.search);
-    // Support ?url= and ?ios=
-    let videoUrl = params.get('url') || params.get('ios');
-
-    if (videoUrl) {
-      try { videoUrl = decodeURIComponent(videoUrl); } catch(e) {}
+    let url = params.get('url') || params.get('ios');
+    if (url) {
+      try { url = decodeURIComponent(url); } catch(e){}
       urlPanel.classList.add('hidden');
       playerContainer.classList.add('active');
-      loadVideoFromUrl(videoUrl);
+      // Small delay to ensure DOM is ready
+      setTimeout(() => loadVideo(url), 50);
     } else {
-      // Show input panel
       urlPanel.classList.remove('hidden');
       playerContainer.classList.remove('active');
-      showLoading(false);
-      setTimeout(() => urlInput?.focus(), 200);
+      setTimeout(() => urlInput && urlInput.focus(), 200);
     }
   }
 
-  // ---------- EVENT LISTENERS ----------
-  loadBtn.addEventListener('click', function() {
+  // ---------- EVENTS ----------
+  loadBtn.addEventListener('click', function () {
     const url = urlInput.value.trim();
-    if (url) {
-      // Update query string without reload
-      const newUrl = new URL(window.location);
-      newUrl.searchParams.set('url', encodeURIComponent(url));
-      window.history.pushState({}, '', newUrl);
-      loadVideoFromUrl(url);
-    } else {
-      alert('Please enter a URL');
-    }
+    if (!url) { alert('Please enter a URL'); return; }
+    try {
+      const u = new URL(window.location);
+      u.searchParams.set('url', url);
+      window.history.pushState({}, '', u);
+    } catch(e){}
+    loadVideo(url);
   });
 
-  urlInput.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
+  urlInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); loadBtn.click(); }
+  });
+
+  document.querySelectorAll('.example-links span').forEach(function (el) {
+    el.addEventListener('click', function () {
+      urlInput.value = el.getAttribute('data-example');
       loadBtn.click();
-    }
-  });
-
-  // Example links
-  document.querySelectorAll('.example-links span').forEach(function(el) {
-    el.addEventListener('click', function() {
-      const example = el.getAttribute('data-example');
-      if (example) {
-        urlInput.value = example;
-        loadBtn.click();
-      }
     });
   });
 
-  // Back/forward navigation
-  window.addEventListener('popstate', function() {
-    initFromQueryParams();
-  });
+  window.addEventListener('popstate', initFromQuery);
 
-  // Cleanup on unload
-  window.addEventListener('beforeunload', function() {
+  window.addEventListener('beforeunload', function () {
     if (hls) hls.destroy();
     if (plyr) plyr.destroy();
   });
 
   // ---------- START ----------
-  initFromQueryParams();
-
-  // Expose global loader (optional)
-  window.loadVideo = loadVideoFromUrl;
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initFromQuery);
+  } else {
+    initFromQuery();
+  }
 })();
 </script>
 
