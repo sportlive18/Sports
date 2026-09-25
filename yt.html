@@ -6,16 +6,15 @@
   <meta name="referrer" content="no-referrer" />
   <title>Universal Player · YouTube + HLS</title>
 
-  <!-- Plyr CSS (same for both) -->
+  <!-- Plyr CSS -->
   <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-  <!-- Font Awesome for icons (optional, helps with controls) -->
+  <!-- Font Awesome (optional) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
   <style>
-    /* ----- GLOBAL RESET & LAYOUT ----- */
+    /* ---------- GLOBAL ---------- */
     :root {
       --plyr-color-main: #0078e8;
-      --bg-dark: #000;
     }
 
     * {
@@ -26,23 +25,34 @@
       height: 100%;
       margin: 0;
       padding: 0;
-      background: var(--bg-dark);
+      background: #000;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
       overflow: hidden;
+    }
+
+    /* ---------- APP CONTAINER ---------- */
+    .app-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
-    .app-container {
-      position: relative;
+    /* ---------- PLAYER CONTAINER (hidden initially) ---------- */
+    .player-container {
+      display: none;           /* toggled by JS */
       width: 100%;
       height: 100%;
-      max-width: 100%;
-      max-height: 100%;
+      position: relative;
     }
 
-    /* Unified video wrapper – both plyr and raw video fill this */
+    .player-container.active {
+      display: block;
+    }
+
+    /* Video wrapper fills container */
     .video-wrapper {
       position: relative;
       width: 100%;
@@ -50,15 +60,23 @@
       background: #000;
     }
 
-    /* Plyr / video element occupies full wrapper */
-    .plyr,
-    .video-wrapper video {
+    /* The Plyr video element (or container for YouTube) */
+    #plyrVideo {
       width: 100%;
       height: 100%;
       display: block;
+      outline: none;
     }
 
-    /* ----- LOADING OVERLAY (used for HLS) ----- */
+    /* For YouTube, Plyr replaces the video element with a div – ensure it fills */
+    .plyr,
+    .plyr__video-wrapper,
+    .plyr iframe {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    /* ---------- LOADING OVERLAY (HLS) ---------- */
     .loading-overlay {
       position: absolute;
       inset: 0;
@@ -67,7 +85,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      z-index: 20;
+      z-index: 30;
       opacity: 1;
       transition: opacity 0.3s ease;
       color: #fff;
@@ -93,7 +111,7 @@
       to { transform: rotate(360deg); }
     }
 
-    /* ----- ERROR MESSAGE BOX (overlay) ----- */
+    /* ---------- ERROR MESSAGE ---------- */
     .error-message {
       position: absolute;
       top: 50%;
@@ -125,7 +143,7 @@
       word-break: break-all;
     }
 
-    /* ----- INLINE URL INPUT PANEL (appears when no URL) ----- */
+    /* ---------- URL PANEL ---------- */
     .url-panel {
       position: absolute;
       top: 50%;
@@ -142,6 +160,10 @@
       text-align: center;
       color: #eee;
       backdrop-filter: blur(6px);
+    }
+
+    .url-panel.hidden {
+      display: none;
     }
 
     .url-panel h2 {
@@ -219,27 +241,14 @@
     .url-panel .example-links span:hover {
       background: #3a3a3a;
     }
-
-    /* hide panel when not needed */
-    .url-panel.hidden {
-      display: none;
-    }
-
-    /* The main player container – hidden initially until URL exists */
-    .player-container {
-      width: 100%;
-      height: 100%;
-      display: none; /* shown via JS */
-    }
   </style>
 </head>
 <body>
 
 <div class="app-container">
-  <!-- Player container (holds either video or div for plyr) -->
+  <!-- ---------- PLAYER CONTAINER ---------- -->
   <div class="player-container" id="playerContainer">
     <div class="video-wrapper" id="videoWrapper">
-      <!-- The actual video element will be inserted via JS, or we can use static video tag -->
       <video id="plyrVideo" playsinline controls crossorigin="anonymous"></video>
 
       <!-- Loading overlay for HLS -->
@@ -250,7 +259,7 @@
     </div>
   </div>
 
-  <!-- URL input panel (shown when no valid URL) -->
+  <!-- ---------- URL INPUT PANEL ---------- -->
   <div class="url-panel" id="urlPanel">
     <h2>🎬 Universal Player</h2>
     <p>Paste a YouTube link or an <strong>.m3u8</strong> / video URL</p>
@@ -259,38 +268,53 @@
     <div class="example-links">
       <span data-example="https://www.youtube.com/watch?v=dQw4w9WgXcQ">YouTube example</span>
       <span data-example="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8">HLS example</span>
+      <span data-example="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4">MP4 example</span>
     </div>
   </div>
 </div>
 
-<!-- Libraries -->
+<!-- ---------- LIBRARIES ---------- -->
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.min.js"></script>
 
 <script>
 (function() {
+  'use strict';
+
   // ---------- DOM ELEMENTS ----------
-  const videoElement = document.getElementById('plyrVideo');
+  const videoElement    = document.getElementById('plyrVideo');
   const playerContainer = document.getElementById('playerContainer');
-  const urlPanel = document.getElementById('urlPanel');
-  const urlInput = document.getElementById('videoUrlInput');
-  const loadBtn = document.getElementById('loadBtn');
-  const loadingOverlay = document.getElementById('loadingOverlay');
-  const videoWrapper = document.getElementById('videoWrapper');
+  const urlPanel        = document.getElementById('urlPanel');
+  const urlInput        = document.getElementById('videoUrlInput');
+  const loadBtn         = document.getElementById('loadBtn');
+  const loadingOverlay  = document.getElementById('loadingOverlay');
+  const videoWrapper    = document.getElementById('videoWrapper');
 
   // ---------- STATE ----------
   let plyr = null;              // Plyr instance
-  let hls = null;              // Hls instance
+  let hls  = null;              // Hls instance
   let currentSourceType = null; // 'youtube' | 'hls' | 'file'
-  let currentVideoId = null;
 
-  // ---------- HELPER: Show / hide loading overlay ----------
-  function showLoading(show = true) {
+  // ---------- HELPERS ----------
+  function showLoading(show) {
     if (show) loadingOverlay.classList.remove('hidden');
-    else loadingOverlay.classList.add('hidden');
+    else      loadingOverlay.classList.add('hidden');
   }
 
-  // ---------- HELPER: Cleanup current player & HLS ----------
+  function clearError() {
+    const err = document.querySelector('.error-message');
+    if (err) err.remove();
+  }
+
+  function displayError(message) {
+    showLoading(false);
+    clearError();
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.innerHTML = `<h2>⚠️ Stream Error</h2><p>${message}</p>`;
+    videoWrapper.appendChild(errorDiv);
+  }
+
   function destroyPlayer() {
     if (hls) {
       hls.destroy();
@@ -300,108 +324,77 @@
       plyr.destroy();
       plyr = null;
     }
-    // Reset video element attributes
+    // Reset video element
     videoElement.removeAttribute('src');
     videoElement.removeAttribute('data-plyr-provider');
     videoElement.removeAttribute('data-plyr-embed-id');
-    // Reset any inline styles
-    videoElement.load(); // clear any pending media
+    try { videoElement.load(); } catch(e) {}
     currentSourceType = null;
-    currentVideoId = null;
   }
 
-  // ---------- HELPER: Extract YouTube ID from URL ----------
+  // ---------- YOUTUBE ID EXTRACTION ----------
   function extractYouTubeID(url) {
     if (!url) return null;
-    // remove extra params after & or ?
-    let cleanUrl = url.split('&')[0];
-    cleanUrl = cleanUrl.split('?si=')[0];
-    try {
-      // youtu.be/ID
-      if (cleanUrl.includes('youtu.be/')) {
-        return cleanUrl.split('youtu.be/')[1]?.split(/[?&]/)[0] || null;
-      }
-      // youtube.com/live/ID
-      if (cleanUrl.includes('/live/')) {
-        return cleanUrl.split('/live/')[1]?.split(/[?&]/)[0] || null;
-      }
-      // youtube.com/shorts/ID
-      if (cleanUrl.includes('/shorts/')) {
-        return cleanUrl.split('/shorts/')[1]?.split(/[?&]/)[0] || null;
-      }
-      // standard youtube.com/watch?v=ID
-      const urlObj = new URL(cleanUrl);
-      const vParam = urlObj.searchParams.get('v');
-      if (vParam) return vParam;
-    } catch (e) {
-      // fallback: try regex
-      const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
-      if (match && match[1]) return match[1];
+    // Normalise
+    let clean = url.trim();
+
+    // youtu.be/ID
+    if (clean.includes('youtu.be/')) {
+      return clean.split('youtu.be/')[1]?.split(/[?&]/)[0] || null;
     }
-    return null;
+    // youtube.com/live/ID
+    if (clean.includes('/live/')) {
+      return clean.split('/live/')[1]?.split(/[?&]/)[0] || null;
+    }
+    // youtube.com/shorts/ID
+    if (clean.includes('/shorts/')) {
+      return clean.split('/shorts/')[1]?.split(/[?&]/)[0] || null;
+    }
+    // standard watch?v=
+    try {
+      const u = new URL(clean);
+      const v = u.searchParams.get('v');
+      if (v) return v;
+    } catch(e) { /* ignore */ }
+
+    // fallback regex
+    const m = clean.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+    return m ? m[1] : null;
   }
 
-  // ---------- HELPER: Is this an HLS (.m3u8) URL? ----------
   function isHlsUrl(url) {
     return url && url.toLowerCase().includes('.m3u8');
   }
 
-  // ---------- HELPER: Show error message on top of player ----------
-  function displayError(message) {
-    showLoading(false);
-    // remove any existing error
-    const existingError = document.querySelector('.error-message');
-    if (existingError) existingError.remove();
-
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'error-message';
-    errorDiv.innerHTML = `
-      <h2>⚠️ Stream Error</h2>
-      <p>${message}</p>
-    `;
-    videoWrapper.appendChild(errorDiv);
-
-    // Auto-remove after 8 seconds? Keep visible for user.
-  }
-
-  // ---------- Clear error if any ----------
-  function clearError() {
-    const err = document.querySelector('.error-message');
-    if (err) err.remove();
-  }
-
-  // ---------- MAIN: Load video from URL ----------
+  // ---------- MAIN LOAD FUNCTION ----------
   function loadVideoFromUrl(rawUrl) {
     if (!rawUrl || rawUrl.trim() === '') {
       alert('Please enter a valid URL');
       return;
     }
 
-    // Clean URL
     const url = rawUrl.trim();
 
     // Hide panel, show player
     urlPanel.classList.add('hidden');
-    playerContainer.style.display = 'block';
+    playerContainer.classList.add('active');
 
-    // Destroy any previous player
+    // Destroy previous
     destroyPlayer();
     clearError();
 
-    // Determine type
     const youtubeId = extractYouTubeID(url);
-    const isHls = isHlsUrl(url);
+    const hlsCheck  = isHlsUrl(url);
 
-    // ---------- YOUTUBE ----------
+    // ----- YOUTUBE -----
     if (youtubeId) {
       currentSourceType = 'youtube';
-      currentVideoId = youtubeId;
+      showLoading(false);
 
       // Set data attributes for Plyr YouTube
       videoElement.setAttribute('data-plyr-provider', 'youtube');
       videoElement.setAttribute('data-plyr-embed-id', youtubeId);
 
-      // Initialize Plyr with YouTube config
       plyr = new Plyr(videoElement, {
         autoplay: true,
         muted: true,
@@ -412,44 +405,35 @@
           params: { modestbranding: 1, rel: 0, iv_load_policy: 3, playsinline: 1 }
         }
       });
-
-      // No loading overlay for YouTube (Plyr handles it)
-      showLoading(false);
       return;
     }
 
-    // ---------- HLS (.m3u8) ----------
-    if (isHls && Hls.isSupported()) {
+    // ----- HLS (.m3u8) -----
+    if (hlsCheck && Hls.isSupported()) {
       currentSourceType = 'hls';
       showLoading(true);
 
-      // Ensure video element has no data-plyr attributes
+      // Remove YouTube attributes
       videoElement.removeAttribute('data-plyr-provider');
       videoElement.removeAttribute('data-plyr-embed-id');
 
-      // Create HLS instance
       hls = new Hls({
         crossOrigin: 'anonymous',
         withCredentials: false,
-        // Optional: start level -1 for auto
-        startLevel: -1,
+        startLevel: -1
       });
 
       hls.loadSource(url);
       hls.attachMedia(videoElement);
 
-      // Once manifest parsed, setup Plyr with quality options
-      hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
-        // Build quality list from levels
-        const levels = data.levels;
+      hls.on(Hls.Events.MANIFEST_PARSED, function(event, data) {
+        // Build quality options
+        const levels = data.levels || [];
         const heights = levels.map(l => l.height).filter(Boolean);
-        const uniqueHeights = [...new Set(heights)].sort((a, b) => b - a); // descending
+        const uniqueHeights = [...new Set(heights)].sort((a,b) => b - a);
         const qualityOptions = [0, ...uniqueHeights]; // 0 = Auto
-
-        // Default to 720 if available, else Auto (0)
         const defaultQuality = uniqueHeights.includes(720) ? 720 : 0;
 
-        // Prepare Plyr config with quality
         const plyrConfig = {
           autoplay: true,
           playsinline: true,
@@ -460,37 +444,32 @@
             default: defaultQuality,
             options: qualityOptions,
             forced: true,
-            onChange: (newQuality) => {
+            onChange: function(newQuality) {
               showLoading(true);
               if (newQuality === 0) {
                 hls.currentLevel = -1; // auto
               } else {
-                const levelIndex = hls.levels.findIndex(level => level.height === newQuality);
-                if (levelIndex !== -1) hls.currentLevel = levelIndex;
+                const idx = hls.levels.findIndex(l => l.height === newQuality);
+                if (idx !== -1) hls.currentLevel = idx;
               }
             }
           }
         };
 
-        // Initialize Plyr
+        if (plyr) plyr.destroy();
         plyr = new Plyr(videoElement, plyrConfig);
 
-        // Hide loading when playback starts or level switched
+        // Hide loading when ready
         hls.on(Hls.Events.LEVEL_SWITCHED, () => showLoading(false));
-        plyr.on('playing', () => showLoading(false));
-        plyr.on('waiting', () => showLoading(true));
-        plyr.on('canplay', () => showLoading(false));
-        plyr.on('error', (e) => {
-          console.warn('Plyr error', e);
-          displayError('Playback error. Check the stream URL.');
-        });
+        plyr.on('playing',  () => showLoading(false));
+        plyr.on('canplay',  () => showLoading(false));
+        plyr.on('waiting',  () => showLoading(true));
+        plyr.on('error',    () => displayError('Playback error. Check the stream URL.'));
 
-        // Attempt autoplay
         videoElement.play().catch(e => console.warn('Autoplay blocked', e));
       });
 
-      // HLS error handling
-      hls.on(Hls.Events.ERROR, (event, data) => {
+      hls.on(Hls.Events.ERROR, function(event, data) {
         if (data.fatal) {
           switch (data.type) {
             case Hls.ErrorTypes.NETWORK_ERROR:
@@ -500,23 +479,18 @@
               displayError('Media error – the stream may be corrupted.');
               break;
             default:
-              displayError('HLS fatal error: ' + data.reason);
-              break;
+              displayError('HLS fatal error: ' + (data.reason || 'unknown'));
           }
-          if (hls) {
-            hls.destroy();
-            hls = null;
-          }
+          if (hls) { hls.destroy(); hls = null; }
         }
       });
-
       return;
     }
 
-    // ---------- DIRECT FILE (MP4, etc.) ----------
-    // Fallback: treat as regular video file
+    // ----- DIRECT FILE (MP4, etc.) -----
     currentSourceType = 'file';
     showLoading(false);
+
     videoElement.removeAttribute('data-plyr-provider');
     videoElement.removeAttribute('data-plyr-embed-id');
     videoElement.src = url;
@@ -536,35 +510,31 @@
     videoElement.play().catch(e => console.warn('Autoplay blocked', e));
   }
 
-  // ---------- INIT: Check URL parameters ----------
+  // ---------- INIT FROM QUERY PARAMS ----------
   function initFromQueryParams() {
     const params = new URLSearchParams(window.location.search);
-    // Support both ?url= and ?ios= (from original code)
+    // Support ?url= and ?ios=
     let videoUrl = params.get('url') || params.get('ios');
 
     if (videoUrl) {
-      // Decode if needed
-      try { videoUrl = decodeURIComponent(videoUrl); } catch (e) {}
-      // Directly load
+      try { videoUrl = decodeURIComponent(videoUrl); } catch(e) {}
       urlPanel.classList.add('hidden');
-      playerContainer.style.display = 'block';
+      playerContainer.classList.add('active');
       loadVideoFromUrl(videoUrl);
     } else {
       // Show input panel
       urlPanel.classList.remove('hidden');
-      playerContainer.style.display = 'none';
+      playerContainer.classList.remove('active');
       showLoading(false);
-      // Focus input
       setTimeout(() => urlInput?.focus(), 200);
     }
   }
 
   // ---------- EVENT LISTENERS ----------
-  // Load button
-  loadBtn.addEventListener('click', () => {
+  loadBtn.addEventListener('click', function() {
     const url = urlInput.value.trim();
     if (url) {
-      // Update query string without reloading
+      // Update query string without reload
       const newUrl = new URL(window.location);
       newUrl.searchParams.set('url', encodeURIComponent(url));
       window.history.pushState({}, '', newUrl);
@@ -574,17 +544,16 @@
     }
   });
 
-  // Enter key in input
-  urlInput.addEventListener('keydown', (e) => {
+  urlInput.addEventListener('keydown', function(e) {
     if (e.key === 'Enter') {
       e.preventDefault();
       loadBtn.click();
     }
   });
 
-  // Example links click
-  document.querySelectorAll('.example-links span').forEach(el => {
-    el.addEventListener('click', () => {
+  // Example links
+  document.querySelectorAll('.example-links span').forEach(function(el) {
+    el.addEventListener('click', function() {
       const example = el.getAttribute('data-example');
       if (example) {
         urlInput.value = example;
@@ -593,22 +562,21 @@
     });
   });
 
-  // Handle back/forward navigation (popstate)
-  window.addEventListener('popstate', () => {
-    // Reload page state based on new URL (simplest: re-init)
+  // Back/forward navigation
+  window.addEventListener('popstate', function() {
     initFromQueryParams();
   });
 
-  // Cleanup on page unload
-  window.addEventListener('beforeunload', () => {
+  // Cleanup on unload
+  window.addEventListener('beforeunload', function() {
     if (hls) hls.destroy();
     if (plyr) plyr.destroy();
   });
 
-  // Start the app
+  // ---------- START ----------
   initFromQueryParams();
 
-  // Expose a global function to load (optional)
+  // Expose global loader (optional)
   window.loadVideo = loadVideoFromUrl;
 })();
 </script>
