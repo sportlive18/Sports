@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover"/>
+  <meta name="referrer" content="no-referrer"/>
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+ 
+  <title>IOS PLAYER</title>
+
+  <!-- Plyr CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.css"/>
+
+  <!-- HLS.js -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
+
+  <!-- Plyr JS -->
+  <script src="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.polyfilled.js"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      height: 100%; width: 100%;
+      background: #000; overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      -webkit-user-select: none; user-select: none;
+    }
+
+    .video-container {
+      position: fixed; inset: 0;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .video-container video {
+      width: 100%; height: 100%;
+      object-fit: contain;
+      background: #000;
+    }
+    .plyr { height: 100%; width: 100%; }
+
+    /* Loader */
+    #loader {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.85);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 16px; z-index: 9000;
+      transition: opacity 0.3s;
+    }
+    #loader.hidden { opacity: 0; display: none; }
+    #loader .spinner {
+      width: 44px; height: 44px;
+      border: 4px solid rgba(255,255,255,0.15);
+      border-top-color: #3b82f6;
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #loader p { color: #888; font-size: 13px; letter-spacing: 0.4px; }
+
+    /* Error */
+    #error {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      color: #f87171; background: rgba(0,0,0,0.92);
+      padding: 22px 28px; border-radius: 12px;
+      font-size: 14px; text-align: center;
+      max-width: 90%; display: none; z-index: 9500;
+      border: 1px solid rgba(255,255,255,0.08);
+      line-height: 1.5;
+    }
+    #error.show { display: block; }
+    #error .title { font-weight: 700; margin-bottom: 8px; font-size: 16px; color: #ef4444; }
+    #error .detail { color: #aaa; font-size: 12px; margin-top: 8px; word-break: break-word; }
+
+    /* Status */
+    #status {
+      position: fixed; top: 12px; left: 12px; z-index: 9998;
+      padding: 6px 14px; background: rgba(8,8,8,0.9);
+      color: #3b82f6; border-radius: 20px;
+      font-size: 11px; font-weight: 500;
+      border: 1px solid rgba(255,255,255,0.05);
+      opacity: 0; transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    #status.show { opacity: 1; }
+
+    /* Live badge */
+    #liveBadge {
+      position: fixed; top: 12px; right: 12px; z-index: 9998;
+      padding: 5px 12px; background: rgba(239,68,68,0.95);
+      color: #fff; border-radius: 20px;
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 1px; text-transform: uppercase;
+      display: none;
+    }
+    #liveBadge.show { display: block; }
+    #liveBadge::before {
+      content: "●"; margin-right: 5px;
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    :root {
+      --plyr-color-main: #3b82f6;
+      --plyr-video-background: #000;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="video-container">
+    <video id="player" playsinline webkit-playsinline autoplay muted preload="metadata"></video>
+  </div>
+
+  <div id="loader">
+    <div class="spinner"></div>
+    <p id="loaderText">Loading stream…</p>
+  </div>
+
+  <div id="status"></div>
+  <div id="liveBadge">Live</div>
+
+  <div id="error">
+    <div class="title">Playback Error</div>
+    <div id="errorMsg"></div>
+    <div class="detail" id="errorDetail"></div>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      // ── Parse query params ────────────────────────────────────────────
+      // Supported:
+      //   ?url=https://example.com/stream.m3u8
+      //   ?url=https://example.com/stream.m3u8|Referer=https://site.com/&Origin=https://site.com
+      function parseParams() {
+        var params  = new URLSearchParams(location.search);
+        var raw     = params.get("url") || "";
+        var referer = params.get("Referer") || params.get("referer") || "";
+        var origin  = params.get("Origin")  || params.get("origin")  || "";
+        var cookie  = params.get("Cookie")  || params.get("cookie")  || "";
+
+        // Pipe-separated extras after the url:  url|Referer=…&Origin=…&Cookie=…
+        if (raw.indexOf("|") !== -1) {
+          var parts = raw.split("|");
+          raw = parts[0];
+          for (var i = 1; i < parts.length; i++) {
+            var pairs = parts[i].split("&");
+            for (var j = 0; j < pairs.length; j++) {
+              var kv = pairs[j].split("=");
+              var k  = (kv[0] || "").trim().toLowerCase();
+              var v  = decodeURIComponent(kv.slice(1).join("=") || "").trim();
+              if (k === "referer" || k === "referrer") referer = v;
+              else if (k === "origin")                  origin  = v;
+              else if (k === "cookie")                  cookie  = v;
+            }
+          }
+        }
+
+        return {
+          url:     raw.trim(),
+          referer: referer.trim(),
+          origin:  origin.trim(),
+          cookie:  cookie.trim()
+        };
+      }
+
+      var PARAMS = parseParams();
+      var SOURCE = PARAMS.url;
+
+      // ── DOM refs ──────────────────────────────────────────────────────
+      var $video       = document.getElementById("player");
+      var $loader      = document.getElementById("loader");
+      var $loaderText  = document.getElementById("loaderText");
+      var $error       = document.getElementById("error");
+      var $errorMsg    = document.getElementById("errorMsg");
+      var $errorDetail = document.getElementById("errorDetail");
+      var $status      = document.getElementById("status");
+      var $liveBadge   = document.getElementById("liveBadge");
+
+      var statusTimer = null;
+      var hls         = null;
+      var player      = null;
+      var nativeBound = false;
+      var unmuteBound = false;
+      var userUnmuted = false;
+      var retries     = 0;
+      var MAX_RETRIES = 5;
+
+      // ── UI helpers ────────────────────────────────────────────────────
+      function showStatus(msg, dur) {
+        $status.textContent = msg;
+        $status.classList.add("show");
+        if (statusTimer) { clearTimeout(statusTimer); statusTimer = null; }
+        if (dur !== 0) {
+          statusTimer = setTimeout(function () {
+            $status.classList.remove("show");
+            statusTimer = null;
+          }, dur || 3000);
+        }
+      }
+
+      function hideStatus() {
+        if (statusTimer) { clearTimeout(statusTimer); statusTimer = null; }
+        $status.classList.remove("show");
+      }
+
+      function showError(msg, detail) {
+        $errorMsg.textContent    = msg;
+        $errorDetail.textContent = detail || "";
+        $error.classList.add("show");
+        hideLoader();
+        console.error("[Player]", msg, detail || "");
+      }
+
+      function hideError()  { $error.classList.remove("show"); }
+      function hideLoader() { $loader.classList.add("hidden"); }
+      function showLoader(t) {
+        if (t) $loaderText.textContent = t;
+        $loader.classList.remove("hidden");
+      }
+
+      // ── Environment ───────────────────────────────────────────────────
+      function isIOS() {
+        return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      }
+      function canNativeHls() {
+        return $video.canPlayType("application/vnd.apple.mpegurl") !== "";
+      }
+      function hlsJsSupported() {
+        return !!(window.Hls && window.Hls.isSupported());
+      }
+
+      // ── Auto-unmute on first user gesture ─────────────────────────────
+      function setupAutoUnmute() {
+        if (unmuteBound) return;
+        unmuteBound = true;
+
+        function unmute() {
+          userUnmuted = true;
+          try {
+            if ($video.muted) $video.muted = false;
+            if ($video.volume === 0) $video.volume = 1;
+          } catch (e) {}
+          document.removeEventListener("click",      unmute, true);
+          document.removeEventListener("touchstart", unmute, true);
+          document.removeEventListener("keydown",    unmute, true);
+        }
+
+        document.addEventListener("click",      unmute, true);
+        document.addEventListener("touchstart", unmute, true);
+        document.addEventListener("keydown",    unmute, true);
+      }
+
+      // ── Muted autoplay attempt ────────────────────────────────────────
+      function tryPlay() {
+        if (!userUnmuted) {
+          $video.muted = true;
+          $video.setAttribute("muted", "");
+        }
+        var p = $video.play();
+        if (p && typeof p.catch === "function") {
+          p.catch(function () {
+            showStatus("Tap ▶ to start", 5000);
+          });
+        }
+      }
+
+      // ── Init Plyr (once) with optional quality levels ─────────────────
+      function initPlyr(qualities) {
+        if (player) return;
+
+        var opts = {
+          autoplay: true,
+          controls: [
+            "play",
+            "rewind",
+            "fast-forward",
+            "progress",
+            "current-time",
+            "mute",
+            "volume",
+            "settings",
+            "pip",
+            "airplay",
+            "fullscreen"
+          ],
+          settings: (qualities && qualities.length) ? ["quality", "speed"] : ["speed"],
+          speed: {
+            selected: 1,
+            options: [0.5, 0.75, 1, 1.25, 1.5, 2]
+          }
+        };
+
+        if (qualities && qualities.length) {
+          var qOpts = ["Auto"].concat(qualities);
+          opts.quality = {
+            default: "Auto",
+            options: qOpts,
+            forced: true,
+            onChange: function (q) {
+              if (!hls || !hls.levels) return;
+              if (q === "Auto") { hls.currentLevel = -1; return; }
+              var idx = -1;
+              for (var i = 0; i < hls.levels.length; i++) {
+                if (hls.levels[i].height === q) { idx = i; break; }
+              }
+              if (idx >= 0) hls.currentLevel = idx;
+            }
+          };
+        }
+
+        player = new Plyr($video, opts);
+      }
+
+      // ── hls.js fatal-error handler with bounded retries ───────────────
+      function handleHlsError(data) {
+        if (!data || !data.fatal) return;
+
+        var type    = data.type;
+        var details = data.details || "";
+
+        if (type === Hls.ErrorTypes.NETWORK_ERROR) {
+          if (retries < MAX_RETRIES) {
+            retries++;
+            showStatus("Reconnecting (" + retries + "/" + MAX_RETRIES + ")…", 2500);
+            setTimeout(function () {
+              try { hls.startLoad(); } catch (e) {}
+            }, 1500);
+          } else {
+            showError("Network error",
+              "Gave up after " + MAX_RETRIES + " retries — " + details);
+          }
+        } else if (type === Hls.ErrorTypes.MEDIA_ERROR) {
+          if (retries < MAX_RETRIES) {
+            retries++;
+            showStatus("Recovering media (" + retries + "/" + MAX_RETRIES + ")…", 2500);
+            try { hls.recoverMediaError(); } catch (e) {}
+          } else {
+            showError("Media error", details);
+          }
+        } else {
+          showError("Playback failed", details);
+        }
+      }
+
+      // ── Native listeners (idempotent) ─────────────────────────────────
+      function bindNativeListeners() {
+        if (nativeBound) return;
+        nativeBound = true;
+
+        $video.addEventListener("loadedmetadata", hideLoader);
+        $video.addEventListener("playing", function () {
+          hideLoader();
+          hideError();
+          hideStatus();
+          retries = 0;
+          showStatus("● Playing", 2000);
+        });
+        $video.addEventListener("waiting", function () {
+          showStatus("Buffering…", 0);
+        });
+        $video.addEventListener("error", function () {
+          var e = $video.error;
+          showError(
+            "Native playback error",
+            e ? (e.message || "code " + e.code) : "unknown"
+          );
+        });
+      }
+
+      // ── Main ──────────────────────────────────────────────────────────
+      function initPlayer() {
+        if (!SOURCE) {
+          showError("Missing stream URL",
+            "Open this page with ?url=https://example.com/stream.m3u8");
+          return;
+        }
+
+        console.log("[Player] Stream:", SOURCE);
+
+        setupAutoUnmute();
+
+        if (PARAMS.referer || PARAMS.origin || PARAMS.cookie) {
+          showStatus("Custom headers active", 3000);
+        }
+
+        // Branch: iOS/Safari-only -> native, else hls.js when possible
+        var useNative = isIOS() || (canNativeHls() && !hlsJsSupported());
+
+        if (useNative) {
+          console.log("[Player] Native HLS path");
+          if (PARAMS.referer || PARAMS.origin) {
+            showStatus("Note: custom headers unsupported here", 4000);
+          }
+          $video.src = SOURCE;
+          bindNativeListeners();
+          initPlyr(null);
+          tryPlay();
+          return;
+        }
+
+        if (hlsJsSupported()) {
+          console.log("[Player] hls.js path");
+
+          var hlsConfig = {
+            autoStartLoad: true,
+            lowLatencyMode: true,
+            enableWorker: true,
+            backBufferLength: 30,
+            maxBufferLength: 30,
+            maxMaxBufferLength: 60,
+            liveSyncDurationCount: 3,
+            liveMaxLatencyDurationCount: 10,
+            manifestLoadingTimeOut: 20000,
+            manifestLoadingMaxRetry: 4,
+            manifestLoadingRetryDelay: 1000,
+            levelLoadingTimeOut: 20000,
+            levelLoadingMaxRetry: 4,
+            fragLoadingTimeOut: 20000,
+            fragLoadingMaxRetry: 6
+          };
+
+          // Only attach xhrSetup when custom headers are present
+          if (PARAMS.referer || PARAMS.origin || PARAMS.cookie) {
+            hlsConfig.xhrSetup = function (xhr) {
+              // Referer/Origin/Cookie are forbidden header names in browsers,
+              // so these will silently fail — they only work via a server proxy.
+              try { if (PARAMS.referer) xhr.setRequestHeader("Referer", PARAMS.referer); } catch (e) {}
+              try { if (PARAMS.origin)  xhr.setRequestHeader("Origin",  PARAMS.origin);  } catch (e) {}
+              try { if (PARAMS.cookie)  xhr.setRequestHeader("Cookie",  PARAMS.cookie);  } catch (e) {}
+            };
+          }
+
+          hls = new Hls(hlsConfig);
+
+          hls.loadSource(SOURCE);
+          hls.attachMedia($video);
+
+          hls.on(Hls.Events.MANIFEST_PARSED, function (_, data) {
+            console.log("[Player] Manifest parsed");
+            var qualities = (data.levels || [])
+              .map(function (l) { return l.height; })
+              .filter(function (h) { return !!h; })
+              .filter(function (v, i, a) { return a.indexOf(v) === i; })
+              .sort(function (a, b) { return b - a; });
+
+            initPlyr(qualities);
+            hideLoader();
+            tryPlay();
+          });
+
+          hls.on(Hls.Events.LEVEL_LOADED, function (_, data) {
+            if (data && data.details && data.details.live) {
+              $liveBadge.classList.add("show");
+            }
+          });
+
+          hls.on(Hls.Events.ERROR, function (_, data) {
+            console.error("[hls.js]", data);
+            handleHlsError(data);
+          });
+
+          $video.addEventListener("playing", function () {
+            hideLoader();
+            hideError();
+            hideStatus();
+            retries = 0;
+            showStatus("● Playing", 2000);
+          });
+          $video.addEventListener("waiting", function () {
+            showStatus("Buffering…", 0);
+          });
+
+          return;
+        }
+
+        // Last-resort native
+        if (canNativeHls()) {
+          console.log("[Player] Fallback native HLS");
+          $video.src = SOURCE;
+          bindNativeListeners();
+          initPlyr(null);
+          tryPlay();
+          return;
+        }
+
+        showError("HLS not supported",
+          "Your browser cannot play this stream.");
+      }
+
+      document.addEventListener("DOMContentLoaded", initPlayer);
+
+      window.addEventListener("beforeunload", function () {
+        if (hls)    { try { hls.destroy();    } catch (e) {} }
+        if (player) { try { player.destroy(); } catch (e) {} }
+      });
+    })();
+  </script>
+
+</body>
+</html>
